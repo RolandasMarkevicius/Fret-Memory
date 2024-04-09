@@ -1,7 +1,8 @@
 from PySide6.QtCore import QSize, Qt, QPropertyAnimation
-from PySide6.QtWidgets import QApplication, QWidget, QPushButton, QMainWindow, QVBoxLayout
-from PySide6.QtGui import QPixmap, QPainter, QColor, QIcon, QResizeEvent
+from PySide6.QtWidgets import QApplication, QWidget, QPushButton, QMainWindow, QVBoxLayout, QLabel, QHBoxLayout
+from PySide6.QtGui import QPixmap, QPainter, QColor, QIcon, QResizeEvent, QPen, QBrush, QFont
 from PySide6.QtSvg import QSvgRenderer
+from PySide6.QtSvgWidgets import QSvgWidget
 from PySide6.QtCore import QVariantAnimation
 
 
@@ -26,50 +27,75 @@ class MainWindow(QMainWindow):
 
         background_widget.setPalette(p)
 
+        #Layouts
+
         first_layout = QVBoxLayout(background_widget)
         second_layout = QVBoxLayout()
+        third_layout = QHBoxLayout()
+        fourth_layout = QVBoxLayout()
 
-        #String buttons
+        #Images
 
-        str_button_size = QSize(50, 50)
+        #Fret boad image
+        fretboard_image_size = QSize(900, 200)
+        fretboard_image = QSvgWidget("C://Users//Rolandas//Desktop//Portfolio//DL&Python Projects//Fret Memory//Images//Fret_Board.svg")
+        fretboard_image.setFixedSize(fretboard_image_size)
 
-        #e button
-        # self.e_button = QPushButton(self) #define push button widget
-        # e_button_icon = self.svg_to_icon(size=str_button_size, path="Images\e_button.svg")
-        # self.e_button.setIcon(e_button_icon)
-        # self.e_button.setMinimumSize(str_button_size)
+        #Buttons
+        button_size = QSize(20, 20)
+        button_back_colour = QColor(97, 98, 102)
+        button_letter_colour = QColor(50, 50, 51)
+        button_roundness = 3
 
-        self.e_button = SVG_Button(svg_path="Images\e_button.svg", size=str_button_size)
-        self.e_button.resize(50, 50)
-        #self.e_button.setIconSize(QSize(50, 50))
-        # self.e_button.setStyleSheet("")
-        # self.e_button.setText("")
+        evi_button = NoteButton(size=button_size, 
+                                   text="E", 
+                                   back_colour=button_back_colour, 
+                                   letter_colour=button_letter_colour, 
+                                   roundness=button_roundness)
 
-        #self.e_button.setCheckable(True)
-        # self.e_button.clicked.connect(self.toggle_e)
-        # #test_button.setChecked(self.test_value)
-
-        second_layout.addWidget(self.e_button)
-        first_layout.addLayout(second_layout)
-        first_layout.setAlignment(second_layout, Qt.AlignCenter)
-
-
-
-    # def svg_to_icon(self, size, path):
-
-    #     #scg to QPixmap
-    #     button_pixmap = QPixmap(QSize(500, 500)) #define a pixmap (pixmas is basically a canvas)
-    #     button_pixmap.fill(Qt.transparent) #set transparent background for the pixmap
-    #     painter = QPainter(button_pixmap) #define the Qpainter object
-    #     e_button_img = QSvgRenderer(path) #get the svg image
-    #     e_button_img.render(painter) #render the svg on the pixmap
-    #     painter.end()
-
-    #     #convert pixmap to icon
-    #     icon = QIcon(button_pixmap) 
-
-    #     return icon
+        b_button = NoteButton(size=button_size, 
+                                   text="B", 
+                                   back_colour=button_back_colour, 
+                                   letter_colour=button_letter_colour, 
+                                   roundness=button_roundness)
         
+        g_button = NoteButton(size=button_size, 
+                                   text="G", 
+                                   back_colour=button_back_colour, 
+                                   letter_colour=button_letter_colour, 
+                                   roundness=button_roundness)
+        
+        d_button = NoteButton(size=button_size, 
+                                   text="D", 
+                                   back_colour=button_back_colour, 
+                                   letter_colour=button_letter_colour, 
+                                   roundness=button_roundness)
+        
+        a_button = NoteButton(size=button_size, 
+                                   text="A", 
+                                   back_colour=button_back_colour, 
+                                   letter_colour=button_letter_colour, 
+                                   roundness=button_roundness)
+        
+        ei_button = NoteButton(size=button_size, 
+                                   text="E", 
+                                   back_colour=button_back_colour, 
+                                   letter_colour=button_letter_colour, 
+                                   roundness=button_roundness)
+
+        # second_layout.addWidget(self.e_button)
+        fourth_layout.addWidget(evi_button)
+        fourth_layout.addWidget(b_button)
+        fourth_layout.addWidget(g_button)
+        fourth_layout.addWidget(d_button)
+        fourth_layout.addWidget(a_button)
+        fourth_layout.addWidget(ei_button)
+
+        third_layout.addLayout(fourth_layout)
+        third_layout.addWidget(fretboard_image)
+
+        first_layout.addLayout(third_layout)
+        first_layout.setAlignment(second_layout, Qt.AlignCenter)        
 
     def toggle_e(self, checked):
         #get the checked state of the button
@@ -98,12 +124,12 @@ class SVG_Button(QPushButton):
         self.setIconSize(size)
 
         #hover animation
-        self.animation = QPropertyAnimation(self, b"icon")
-        self.animation.setDirection(200)
-        self.animation.setLoopCount(1)
+        # self.animation = QPropertyAnimation(self, b"icon")
+        # self.animation.setDirection(200)
+        # self.animation.setLoopCount(1)
 
-        self.animation.setStartValue(QIcon(button_pixmap))
-        self.animation.
+        # self.animation.setStartValue(QIcon(button_pixmap))
+        # #self.animation.
 
 
         self.clicked.connect(self.test_click)
@@ -124,6 +150,48 @@ class SVG_Button(QPushButton):
     #     # Update icon size when button is resized
     #     self.update_icon_size()
 
+class NoteButton(QPushButton):
+    def __init__(self, size, text, back_colour, letter_colour, roundness, parent=None):
+        super().__init__(parent)
+
+        self.setFlat(True)
+
+        self.size = size
+        self.text = text
+        self.back_colour = back_colour
+        self.letter_colour = letter_colour
+        self.roundness = roundness
+
+        self.custom_font = QFont() #define the font class
+        self.custom_font.setFamily("Calibri") #set the font type
+        self.custom_font.setBold(True) #set font class to Bold
+        self.custom_font.setPointSize(13) #set the font size
+
+
+        self.setFixedSize(size) #set the size
+
+        self.clicked.connect(self.test_click)
+
+        #Generate the image
+    def paintEvent(self, event): #what does the event do?
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.Antialiasing) #enable anti aliasing for smooth edges
+
+        #Draw rounded rectangle
+        painter.setPen(Qt.NoPen)
+        painter.setBrush(self.back_colour)
+        painter.drawRoundedRect(0, 0, self.width(), self.height(), self.roundness, self.roundness)
+
+        #Draw letter
+        painter.setPen(self.letter_colour)
+        painter.setFont(self.custom_font)
+        painter.drawText(event.rect(), Qt.AlignCenter, self.text)
+        painter.end()
+
+    def test_click(self):
+        print("button clicked")
+
+
 
 #Qapplication instance
 app = QApplication([])
@@ -134,6 +202,3 @@ window.show()
 
 #Event loop
 app.exec()
-
-#Make a resizable window
-#Make a text button For 
