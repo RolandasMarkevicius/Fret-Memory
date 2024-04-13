@@ -1,4 +1,4 @@
-from PySide6.QtCore import QSize, Qt, QPropertyAnimation, QEasingCurve, Signal, Property
+from PySide6.QtCore import QSize, Qt, QPropertyAnimation, QEasingCurve, Signal, Property, QParallelAnimationGroup
 from PySide6.QtWidgets import QApplication, QWidget, QPushButton, QMainWindow, QVBoxLayout, QLabel, QHBoxLayout
 from PySide6.QtGui import QPixmap, QPainter, QColor, QIcon, QResizeEvent, QPen, QBrush, QFont, QPalette
 from PySide6.QtSvg import QSvgRenderer
@@ -138,16 +138,18 @@ class NoteButton(QPushButton):
                            """)
         self.setFixedSize(self.size)
 
-        # self.clicked.connect(self.button_click)
-
-        self.animation = QVariantAnimation(self)
-        self.animation.setEasingCurve(QEasingCurve.InOutCubic)
+        self.anim_background = QVariantAnimation(self)
+        self.anim_letter = QVariantAnimation(self)
+        self.anim_group = QParallelAnimationGroup()
+        self.anim_background.setEasingCurve(QEasingCurve.InOutCubic)
+        self.anim_letter.setEasingCurve(QEasingCurve.InOutCubic)
 
         self.enterEvent = self.button_enter_event #qt sends a signal as enter event, it's assignes to function button _enter event
         self.leaveEvent = self.button_leave_event #dito
 
-        self.clicked.connect(self.click_animation)
+        self.pressed.connect(self.pressed_animation)
         self.released.connect(self.release_animation)
+        self.clicked.connect(self.button_click)
 
         self.setCheckable(True)
 
@@ -166,34 +168,66 @@ class NoteButton(QPushButton):
             padding: 0;
                            """)
 
-        self.animation.setStartValue(QColor(self.neutral_colour.name()))
-        self.animation.setEndValue(QColor(self.highlight_colour.name()))
-        self.animation.setDuration(250)
-        self.animation.valueChanged.connect(set_style_sheet)
-        self.animation.start()
+        self.anim_background.setStartValue(QColor(self.neutral_colour.name()))
+        self.anim_background.setEndValue(QColor(self.highlight_colour.name()))
+        self.anim_background.setDuration(250)
+        self.anim_background.valueChanged.connect(set_style_sheet)
+        self.anim_background.start()
 
     def button_leave_event(self, event):
-        def set_style_sheet(color):
+        def set_style_sheet():
+            print(f'letter colour - {self.anim_letter.currentValue().name()}')
+            print(f'background colour - {self.anim_background.currentValue().name()}')
+            letter_colour = self.anim_letter.currentValue().name()
+            backgorund_colour = self.anim_background.currentValue().name()
             self.setStyleSheet(f"""
             border: none;
             text-align: center;
             text-decoration: none;
             border-radius: {self.roundness}px;
-            background-color: {color.name()};;
-            color: {self.background_colour.name()};
+            background-color: {backgorund_colour};;
+            color: {letter_colour};
             font-family: Calibri;
             font-size: 15px;
             font-weight: bold;
             padding: 0;
                            """)
+            
+        if self.isChecked():
+            print("On") 
 
-        self.animation.setStartValue(QColor(self.highlight_colour.name()))
-        self.animation.setEndValue(QColor(self.neutral_colour.name()))
-        self.animation.setDuration(250)
-        self.animation.valueChanged.connect(set_style_sheet)
-        self.animation.start()        
+            self.anim_background.setStartValue(QColor(self.highlight_colour.name()))
+            self.anim_background.setEndValue(QColor(self.neutral_colour.name()))
+            self.anim_background.setDuration(250)
 
-    def click_animation(self, checked):
+            self.anim_letter.setStartValue(QColor(self.neutral_colour.name()))
+            self.anim_letter.setEndValue(QColor(self.highlight_colour.name()))
+            self.anim_letter.setDuration(250)
+
+            self.anim_letter.valueChanged.connect(set_style_sheet)
+
+            self.anim_group.addAnimation(self.anim_letter)
+            self.anim_group.addAnimation(self.anim_background)
+            self.anim_group.start()
+
+        else:
+            print("Off")
+
+            self.anim_background.setStartValue(QColor(self.highlight_colour.name()))
+            self.anim_background.setEndValue(QColor(self.neutral_colour.name()))
+            self.anim_background.setDuration(250)
+
+            self.anim_letter.setStartValue(QColor(self.neutral_colour.name()))
+            self.anim_letter.setEndValue(QColor(self.neutral_colour.name()))
+            self.anim_letter.setDuration(250)
+
+            self.anim_letter.valueChanged.connect(set_style_sheet)
+
+            self.anim_group.addAnimation(self.anim_letter)
+            self.anim_group.addAnimation(self.anim_background)
+            self.anim_group.start()
+
+    def pressed_animation(self):
 
         def set_style_sheet(colour):
                 self.setStyleSheet(f"""
@@ -209,40 +243,11 @@ class NoteButton(QPushButton):
                 padding: 0;
                             """)
 
-        #self.mousePressEvent = True
-
-        #if statement
-        if checked == True:
-            print("click test", checked)
-
-            self.animation.setStartValue(QColor(self.highlight_colour.name()))
-            self.animation.setEndValue(QColor(self.neutral_colour.name()))
-            self.animation.setDuration(100)
-            self.animation.valueChanged.connect(set_style_sheet)
-            self.animation.start()
-
-            #change the static button look            
-
-        # elif checked == False:
-        #     print("click test", checked)
-        #     def set_style_sheet(color):
-        #         self.setStyleSheet(f"""
-        #         border: none;
-        #         text-align: center;
-        #         text-decoration: none;
-        #         border-radius: {self.roundness}px;
-        #         background-color: {color.name()};;
-        #         color: {self.letter_colour.name()};
-        #         font-family: Calibri;
-        #         font-size: 15px;
-        #         font-weight: bold;
-        #         padding: 0;
-        #                     """)
-
-        #     self.animation.setStartValue(QColor(self.back_colour.name()))
-        #     self.animation.setEndValue(QColor(self.highlight_colour.name()))
-        #     self.animation.valueChanged.connect(set_style_sheet)
-        #     self.animation.start()
+        self.anim_background.setStartValue(QColor(self.highlight_colour.name()))
+        self.anim_background.setEndValue(QColor(self.neutral_colour.name()))
+        self.anim_background.setDuration(100)
+        self.anim_background.valueChanged.connect(set_style_sheet)
+        self.anim_background.start()
 
     def release_animation(self):
         def set_style_sheet(colour):
@@ -259,42 +264,15 @@ class NoteButton(QPushButton):
                 padding: 0;
                             """)
 
-        #if statement
-        print("release test")
+        self.anim_background.setStartValue(QColor(self.neutral_colour.name()))
+        self.anim_background.setEndValue(QColor(self.highlight_colour.name()))
+        self.anim_background.setDuration(100)
+        self.anim_background.valueChanged.connect(set_style_sheet)
+        self.anim_background.start()
 
-        self.animation.setStartValue(QColor(self.neutral_colour.name()))
-        self.animation.setEndValue(QColor(self.highlight_colour.name()))
-        self.animation.setDuration(100)
-        self.animation.valueChanged.connect(set_style_sheet)
-        self.animation.start()
 
-        # elif checked == False:
-        #     print("click test", checked)
-        #     def set_style_sheet(color):
-        #         self.setStyleSheet(f"""
-        #         border: none;
-        #         text-align: center;
-        #         text-decoration: none;
-        #         border-radius: {self.roundness}px;
-        #         background-color: {color.name()};;
-        #         color: {self.neutral_colour.name()};
-        #         font-family: Calibri;
-        #         font-size: 15px;
-        #         font-weight: bold;
-        #         padding: 0;
-        #                     """)
-
-        #     self.animation.setStartValue(QColor(self.background_colour.name()))
-        #     self.animation.setEndValue(QColor(self.highlight_colour.name()))
-        #     self.animation.valueChanged.connect(set_style_sheet)
-        #     self.animation.start()
-
-    # def button_click(self):
-    #     print("button clicked")
-
-    # def button_release(self):
-    #     print("button released")
-
+    def button_click(self, checked):
+        print("button clicked", checked)
 
 #Qapplication instance
 app = QApplication([])
