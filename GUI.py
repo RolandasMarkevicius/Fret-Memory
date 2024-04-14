@@ -1,6 +1,6 @@
 from PySide6.QtCore import QSize, Qt, QPropertyAnimation, QEasingCurve, Signal, Property, QParallelAnimationGroup
 from PySide6.QtWidgets import QApplication, QWidget, QPushButton, QMainWindow, QVBoxLayout, QLabel, QHBoxLayout
-from PySide6.QtGui import QPixmap, QPainter, QColor, QIcon, QResizeEvent, QPen, QBrush, QFont, QPalette
+from PySide6.QtGui import QPaintEvent, QPixmap, QPainter, QColor, QIcon, QResizeEvent, QPen, QBrush, QFont, QPalette
 from PySide6.QtSvg import QSvgRenderer
 from PySide6.QtSvgWidgets import QSvgWidget
 from PySide6.QtCore import QVariantAnimation
@@ -29,17 +29,13 @@ class MainWindow(QMainWindow):
 
         background_widget.setPalette(p)
 
-        #Layouts
-        first_layout = QVBoxLayout(background_widget)
-        second_layout = QVBoxLayout()
-        third_layout = QHBoxLayout()
-        fourth_layout = QVBoxLayout()
-
         #Images
         #Fret boad image
         fretboard_image_size = QSize(900, 200)
         fretboard_image = QSvgWidget("C://Users//Rolandas//Desktop//Portfolio//DL&Python Projects//Fret Memory//Images//Fret_Board.svg")
+        fretboard_image.setContentsMargins(0, 0, 0, 0)
         fretboard_image.setFixedSize(fretboard_image_size)
+        
 
         #Buttons
         button_size = QSize(20, 20)
@@ -51,6 +47,7 @@ class MainWindow(QMainWindow):
                                    neutral_colour=self.c_neutral_grey, 
                                    highlight_colour=self.c_neutral_white,
                                    roundness=button_roundness)
+        evi_button.setContentsMargins(0, 0, 0, 0)
 
         b_button = NoteButton(size=button_size, 
                                    text="B", 
@@ -58,6 +55,7 @@ class MainWindow(QMainWindow):
                                    neutral_colour=self.c_neutral_grey,
                                    highlight_colour=self.c_neutral_white,
                                    roundness=button_roundness)
+        b_button.setContentsMargins(0, 0, 0, 0)
         
         g_button = NoteButton(size=button_size, 
                                    text="G", 
@@ -65,6 +63,7 @@ class MainWindow(QMainWindow):
                                    neutral_colour=self.c_neutral_grey, 
                                    highlight_colour=self.c_neutral_white,
                                    roundness=button_roundness)
+        g_button.setContentsMargins(0, 0, 0, 0)
         
         d_button = NoteButton(size=button_size, 
                                    text="D", 
@@ -72,6 +71,7 @@ class MainWindow(QMainWindow):
                                    neutral_colour=self.c_neutral_grey, 
                                    highlight_colour=self.c_neutral_white,
                                    roundness=button_roundness)
+        d_button.setContentsMargins(0, 0, 0, 0)
         
         a_button = NoteButton(size=button_size, 
                                    text="A", 
@@ -79,6 +79,7 @@ class MainWindow(QMainWindow):
                                    neutral_colour=self.c_neutral_grey, 
                                    highlight_colour=self.c_neutral_white,
                                    roundness=button_roundness)
+        a_button.setContentsMargins(0, 0, 0, 0)
         
         ei_button = NoteButton(size=button_size, 
                                    text="E", 
@@ -86,8 +87,33 @@ class MainWindow(QMainWindow):
                                    neutral_colour=self.c_neutral_grey, 
                                    highlight_colour=self.c_neutral_white,
                                    roundness=button_roundness)
+        ei_button.setContentsMargins(0, 0, 0, 0)
 
-        # second_layout.addWidget(self.e_button)
+        #NoteSheet
+        # self.label = QLabel()
+        # canvas = QPixmap(400, 300)
+        # canvas.fill(Qt.white)
+        # self.label.setPixmap(canvas)
+        # self.line_paint()
+
+
+        #Layouts
+        first_layout = QVBoxLayout(background_widget)
+        first_layout.setContentsMargins(0, 0, 0, 0)
+        first_layout.setSpacing(0)
+
+        second_layout = QVBoxLayout()
+        second_layout.setContentsMargins(0, 0, 0, 0)
+        second_layout.setSpacing(0)
+
+        third_layout = QHBoxLayout()
+        third_layout.setContentsMargins(0, 0, 0, 0)
+        third_layout.setSpacing(0)
+
+        fourth_layout = QVBoxLayout()
+        fourth_layout.setContentsMargins(0, 0, 0, 23)
+        fourth_layout.setSpacing(0)
+
         fourth_layout.addWidget(evi_button)
         fourth_layout.addWidget(b_button)
         fourth_layout.addWidget(g_button)
@@ -98,8 +124,24 @@ class MainWindow(QMainWindow):
         third_layout.addLayout(fourth_layout)
         third_layout.addWidget(fretboard_image)
 
-        first_layout.addLayout(third_layout)
+        second_layout.addLayout(third_layout)
+        # second_layout.addWidget(self.label)
+
+        first_layout.addLayout(second_layout)
         first_layout.setAlignment(second_layout, Qt.AlignCenter)   
+
+    # def line_paint(self):
+    #     painter = QPainter(self.label.pixmap())
+    #     painter.setPen(self.c_neutral_white)
+    #     painter.drawLine(100, 100, 1000, 5000)
+    #     painter.end()
+
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        painter.setPen(self.c_neutral_white)
+        painter.drawLine(100, 100, 1000, 5000)
+        painter.end()
+
 
     def toggle_e(self, checked):
         #get the checked state of the button
@@ -109,6 +151,19 @@ class MainWindow(QMainWindow):
         elif self.test_button_state == False:
             self.test_button.setText('Enabled')
             #self.test_button.setEnabled(True)
+    
+
+class Test_Line(QWidget):
+    def __init__(self, colour):
+        super().__init__()
+
+        self.colour = colour
+
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        painter.setPen(self.colour)
+        painter.drawLine(10, 10, 100, 500)
+
 
 class NoteButton(QPushButton):
     def __init__(self, size, text, background_colour, neutral_colour, highlight_colour, roundness, parent=None):
@@ -134,7 +189,8 @@ class NoteButton(QPushButton):
             font-family: Calibri;
             font-size: 15px;
             font-weight: bold;
-            padding: 0;
+            margin: 0px;
+            padding: 0px;
                            """)
         self.setFixedSize(self.size)
 
@@ -165,7 +221,8 @@ class NoteButton(QPushButton):
             font-family: Calibri;
             font-size: 15px;
             font-weight: bold;
-            padding: 0;
+            margin: 0px;
+            padding: 0px;
                            """)
 
         self.anim_background.setStartValue(QColor(self.neutral_colour.name()))
@@ -190,7 +247,8 @@ class NoteButton(QPushButton):
             font-family: Calibri;
             font-size: 15px;
             font-weight: bold;
-            padding: 0;
+            margin: 0px;
+            padding: 0px;
                            """)
             
         if self.isChecked():
@@ -240,7 +298,8 @@ class NoteButton(QPushButton):
                 font-family: Calibri;
                 font-size: 15px;
                 font-weight: bold;
-                padding: 0;
+                margin: 0px;
+                padding: 0px;
                             """)
 
         self.anim_background.setStartValue(QColor(self.highlight_colour.name()))
@@ -261,7 +320,8 @@ class NoteButton(QPushButton):
                 font-family: Calibri;
                 font-size: 15px;
                 font-weight: bold;
-                padding: 0;
+                margin: 0px;
+                padding: 0px;
                             """)
 
         self.anim_background.setStartValue(QColor(self.neutral_colour.name()))
