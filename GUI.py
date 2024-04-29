@@ -1,6 +1,6 @@
 from PySide6.QtCore import QSize, Qt, QPropertyAnimation, QEasingCurve, Signal, Property, QParallelAnimationGroup
-from PySide6.QtWidgets import QApplication, QWidget, QPushButton, QMainWindow, QVBoxLayout, QLabel, QHBoxLayout
-from PySide6.QtGui import QPaintEvent, QPixmap, QPainter, QColor, QIcon, QResizeEvent, QPen, QBrush, QFont, QPalette
+from PySide6.QtWidgets import QApplication, QWidget, QPushButton, QMainWindow, QVBoxLayout, QLabel, QHBoxLayout, QScrollArea
+from PySide6.QtGui import QPaintEvent, QPixmap, QPainter, QColor, QIcon, QResizeEvent, QPen, QBrush, QFont, QPalette, QPen
 from PySide6.QtSvg import QSvgRenderer
 from PySide6.QtSvgWidgets import QSvgWidget
 from PySide6.QtCore import QVariantAnimation
@@ -35,6 +35,14 @@ class MainWindow(QMainWindow):
         fretboard_image = QSvgWidget("C://Users//Rolandas//Desktop//Portfolio//DL&Python Projects//Fret Memory//Images//Fret_Board.svg")
         fretboard_image.setContentsMargins(0, 0, 0, 0)
         fretboard_image.setFixedSize(fretboard_image_size)
+
+        #Sheet zone
+        sheet_zone = QScrollArea()
+        sheet_zone.setWidgetResizable(True)
+
+        sheet_widget = SheetWindow(width=1500, height=5000)
+        sheet_zone.setWidget(sheet_widget)
+        sheet_zone.setFixedSize(QSize(1500, 500))
         
 
         #Buttons
@@ -125,6 +133,7 @@ class MainWindow(QMainWindow):
         third_layout.addWidget(fretboard_image)
 
         second_layout.addLayout(third_layout)
+        second_layout.addWidget(sheet_zone)
         # second_layout.addWidget(self.label)
 
         first_layout.addLayout(second_layout)
@@ -333,6 +342,33 @@ class NoteButton(QPushButton):
 
     def button_click(self, checked):
         print("button clicked", checked)
+
+class SheetWindow(QWidget):
+    def __init__(self, width, height, parent=None):
+        super().__init__(parent)
+
+        self.c_background_black = QColor(50, 50, 51)
+        self.c_neutral_grey = QColor(97, 98, 102)
+        self.c_neutral_white = QColor(181, 182, 188)
+
+        self.setMinimumSize(width, height)
+        self.sheet_height = height
+        self.sheet_width = width
+        self.initUI()
+
+    def initUI(self):
+        self.pixmap = QPixmap(self.sheet_width, self.sheet_height)
+        self.pixmap.fill(self.c_background_black)
+
+        painter = QPainter(self.pixmap)
+        painter.setPen(QPen(self.c_neutral_grey, 1, Qt.SolidLine))
+        for i in range(0, self.sheet_height, 50):
+            painter.drawLine(0, i, self.sheet_width, i)
+
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        painter.drawPixmap(0, 0, self.pixmap)
+
 
 #Qapplication instance
 app = QApplication([])
