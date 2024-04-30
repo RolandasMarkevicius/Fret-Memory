@@ -5,6 +5,8 @@ from PySide6.QtSvg import QSvgRenderer
 from PySide6.QtSvgWidgets import QSvgWidget
 from PySide6.QtCore import QVariantAnimation
 
+import numpy as np
+
 
 #Widgets
 class MainWindow(QMainWindow):
@@ -43,6 +45,10 @@ class MainWindow(QMainWindow):
         sheet_widget = SheetWindow(width=1500, height=5000)
         sheet_zone.setWidget(sheet_widget)
         sheet_zone.setFixedSize(QSize(1500, 500))
+
+        sheet_zone.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff) #scrollArea.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        sheet_zone.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)#scrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+
         
 
         #Buttons
@@ -362,8 +368,21 @@ class SheetWindow(QWidget):
 
         painter = QPainter(self.pixmap)
         painter.setPen(QPen(self.c_neutral_grey, 1, Qt.SolidLine))
-        for i in range(0, self.sheet_height, 50):
-            painter.drawLine(0, i, self.sheet_width, i)
+
+        for i in range(0, self.sheet_height, 150):
+            for h_line in np.linspace(0, 100, 6).tolist():
+                painter.drawLine(0, i + h_line, self.sheet_width, i + h_line)
+
+            for v_line in np.linspace(0, self.sheet_width, 24):
+                print(v_line)
+                painter.drawLine(v_line, i, v_line, i + 100)
+
+                
+
+
+        # for idx, i in enumerate(range(0, self.sheet_height, 10)):
+        #     if idx % 2 == 0:
+        #         painter.drawLine(0, i, self.sheet_width, i)
 
     def paintEvent(self, event):
         painter = QPainter(self)
