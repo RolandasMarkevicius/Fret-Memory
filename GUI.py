@@ -1,5 +1,5 @@
 from PySide6.QtCore import QSize, Qt, QPropertyAnimation, QEasingCurve, Signal, Property, QParallelAnimationGroup
-from PySide6.QtWidgets import QApplication, QWidget, QPushButton, QMainWindow, QVBoxLayout, QLabel, QHBoxLayout, QScrollArea
+from PySide6.QtWidgets import QApplication, QWidget, QPushButton, QMainWindow, QVBoxLayout, QLabel, QHBoxLayout, QScrollArea, QSizePolicy
 from PySide6.QtGui import QPaintEvent, QPixmap, QPainter, QColor, QIcon, QResizeEvent, QPen, QBrush, QFont, QPalette, QPen
 from PySide6.QtSvg import QSvgRenderer
 from PySide6.QtSvgWidgets import QSvgWidget
@@ -48,8 +48,6 @@ class MainWindow(QMainWindow):
 
         sheet_zone.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff) #scrollArea.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         sheet_zone.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)#scrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-
-        
 
         #Buttons
         button_size = QSize(20, 20)
@@ -103,13 +101,7 @@ class MainWindow(QMainWindow):
                                    roundness=button_roundness)
         ei_button.setContentsMargins(0, 0, 0, 0)
 
-        #NoteSheet
-        # self.label = QLabel()
-        # canvas = QPixmap(400, 300)
-        # canvas.fill(Qt.white)
-        # self.label.setPixmap(canvas)
-        # self.line_paint()
-
+        tune_guitar_button = TextButton(text='Tune the Guitar')
 
         #Layouts
         first_layout = QVBoxLayout(background_widget)
@@ -139,6 +131,7 @@ class MainWindow(QMainWindow):
         third_layout.addWidget(fretboard_image)
 
         second_layout.addLayout(third_layout)
+        second_layout.addWidget(tune_guitar_button)
         second_layout.addWidget(sheet_zone)
         # second_layout.addWidget(self.label)
 
@@ -167,18 +160,139 @@ class MainWindow(QMainWindow):
             self.test_button.setText('Enabled')
             #self.test_button.setEnabled(True)
     
+class TextButton(QPushButton):
+    def __init__(self, text, parent=None):
+        super().__init__(parent)
 
-class Test_Line(QWidget):
-    def __init__(self, colour):
-        super().__init__()
+        self.c_background_black = QColor(50, 50, 51)
+        self.c_neutral_grey = QColor(97, 98, 102)
+        self.c_neutral_white = QColor(181, 182, 188)
 
-        self.colour = colour
+        self.text = text
 
-    def paintEvent(self, event):
-        painter = QPainter(self)
-        painter.setPen(self.colour)
-        painter.drawLine(10, 10, 100, 500)
+        self.setFlat(True)
+        self.setText(self.text)
 
+        self.setMinimumSize(self.sizeHint())
+        self.setMaximumSize(self.sizeHint())
+
+        #default look
+        self.setStyleSheet(f"""
+            border: none;
+            text-align: center;
+            text-decoration: none;
+            color: {self.c_neutral_grey.name()};
+            font-family: Calibri;
+            font-size: 13px;
+            font-weight: light;
+            margin: 0px;
+            padding: 0px;
+                           """)
+        
+        self.anim_letter = QVariantAnimation(self)
+        self.anim_letter.setEasingCurve(QEasingCurve.InOutCubic)
+
+        self.enterEvent = self.button_enter_event #qt sends a signal as enter event, it's assignes to function button _enter event
+        self.leaveEvent = self.button_leave_event #dito
+
+        self.pressed.connect(self.pressed_animation)
+        self.released.connect(self.release_animation)
+        self.clicked.connect(self.button_click)
+
+        self.setCheckable(True)
+
+    def button_enter_event(self, event):
+        print('button entered')
+        def set_style_sheet(color):
+            self.setStyleSheet(f"""
+                border: none;
+                text-align: center;
+                text-decoration: none;
+                color: {color.name()};
+                font-family: Calibri;
+                font-size: 13px;
+                font-weight: regular;
+                margin: 0px;
+                padding: 0px;
+                            """)
+
+        self.anim_letter.setStartValue(QColor(self.c_neutral_grey.name()))
+        self.anim_letter.setEndValue(QColor(self.c_neutral_white.name()))
+        self.anim_letter.setDuration(250)
+        self.anim_letter.valueChanged.connect(set_style_sheet)
+        self.anim_letter.start()
+
+    def button_leave_event(self, event):
+        print('button left')
+        def set_style_sheet(color):
+            self.setStyleSheet(f"""
+                border: none;
+                text-align: center;
+                text-decoration: none;
+                color: {color.name()};
+                font-family: Calibri;
+                font-size: 13px;
+                font-weight: regular;
+                margin: 0px;
+                padding: 0px;
+                            """)
+
+        if self.isChecked():
+            print("On") 
+            self.anim_letter.valueChanged.connect(set_style_sheet)
+
+        else:
+            print("Off")
+
+            self.anim_letter.setStartValue(QColor(self.c_neutral_white.name()))
+            self.anim_letter.setEndValue(QColor(self.c_neutral_grey.name()))
+            self.anim_letter.setDuration(250)
+
+            self.anim_letter.valueChanged.connect(set_style_sheet)
+            self.anim_letter.start()
+
+    def pressed_animation(self):
+        def set_style_sheet(color):
+            self.setStyleSheet(f"""
+                border: none;
+                text-align: center;
+                text-decoration: none;
+                color: {color.name()};
+                font-family: Calibri;
+                font-size: 13px;
+                font-weight: light;
+                margin: 0px;
+                padding: 0px;
+                            """)
+
+        self.anim_letter.setStartValue(QColor(self.c_neutral_white.name()))
+        self.anim_letter.setEndValue(QColor(self.c_neutral_grey.name()))
+        self.anim_letter.setDuration(100)
+        self.anim_letter.valueChanged.connect(set_style_sheet)
+        self.anim_letter.start()
+
+    def release_animation(self):
+        def set_style_sheet(color):
+            self.setStyleSheet(f"""
+                border: none;
+                text-align: center;
+                text-decoration: none;
+                color: {color.name()};
+                font-family: Calibri;
+                font-size: 13px;
+                font-weight: light;
+                margin: 0px;
+                padding: 0px;
+                            """)
+
+        self.anim_letter.setStartValue(QColor(self.c_neutral_grey.name()))
+        self.anim_letter.setEndValue(QColor(self.c_neutral_white.name()))
+        self.anim_letter.setDuration(100)
+        self.anim_letter.valueChanged.connect(set_style_sheet)
+        self.anim_letter.start()
+
+    def button_click(self, checked):
+        print("button clicked", checked)
 
 class NoteButton(QPushButton):
     def __init__(self, size, text, background_colour, neutral_colour, highlight_colour, roundness, parent=None):
@@ -360,29 +474,28 @@ class SheetWindow(QWidget):
         self.setMinimumSize(width, height)
         self.sheet_height = height
         self.sheet_width = width
-        self.initUI()
+        self.initsheetlines()
 
-    def initUI(self):
+    def initsheetlines(self):
         self.pixmap = QPixmap(self.sheet_width, self.sheet_height)
         self.pixmap.fill(self.c_background_black)
 
         painter = QPainter(self.pixmap)
-        painter.setPen(QPen(self.c_neutral_grey, 1, Qt.SolidLine))
+        painter.setPen(QPen(self.c_neutral_grey, 0.75, Qt.SolidLine))
 
-        for i in range(0, self.sheet_height, 150):
+        for i in range(50, self.sheet_height, 150):
             for h_line in np.linspace(0, 100, 6).tolist():
-                painter.drawLine(0, i + h_line, self.sheet_width, i + h_line)
+                painter.drawLine(25, i + h_line, self.sheet_width - 25, i + h_line)
+        painter.end()
 
-            for v_line in np.linspace(0, self.sheet_width, 24):
-                print(v_line)
-                painter.drawLine(v_line, i, v_line, i + 100)
+        painter_2 = QPainter(self.pixmap)
+        painter_2.setPen(QPen(self.c_neutral_grey, 0.25, Qt.SolidLine))
 
-                
+        for i in range(50, self.sheet_height, 150):
+            for v_line in np.linspace(25, self.sheet_width - 25, 24):
+                painter_2.drawLine(v_line, i, v_line, i + 100)
+        painter_2.end()
 
-
-        # for idx, i in enumerate(range(0, self.sheet_height, 10)):
-        #     if idx % 2 == 0:
-        #         painter.drawLine(0, i, self.sheet_width, i)
 
     def paintEvent(self, event):
         painter = QPainter(self)
