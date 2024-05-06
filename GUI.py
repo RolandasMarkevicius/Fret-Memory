@@ -1,12 +1,17 @@
 from PySide6.QtCore import QSize, Qt, QPropertyAnimation, QEasingCurve, Signal, Property, QParallelAnimationGroup
 from PySide6.QtWidgets import QApplication, QWidget, QPushButton, QMainWindow, QVBoxLayout, QLabel, QHBoxLayout, QScrollArea, QSizePolicy
-from PySide6.QtGui import QPaintEvent, QPixmap, QPainter, QColor, QIcon, QResizeEvent, QPen, QBrush, QFont, QPalette, QPen
+from PySide6.QtGui import QPaintEvent, QPixmap, QPainter, QColor, QIcon, QResizeEvent, QPen, QBrush, QFont, QPalette, QPen, QFontMetrics, QPainterPath
 from PySide6.QtSvg import QSvgRenderer
 from PySide6.QtSvgWidgets import QSvgWidget
 from PySide6.QtCore import QVariantAnimation
 
+import math
 import numpy as np
+import threading
+import time
+import queue
 
+from sound_processing import StringPicker, CalibrateGuitar
 
 #Widgets
 class MainWindow(QMainWindow):
@@ -53,55 +58,49 @@ class MainWindow(QMainWindow):
         button_size = QSize(20, 20)
         button_roundness = 3
 
-        evi_button = NoteButton(size=button_size, 
+        self.evi_button = NoteButton(size=button_size, 
                                    text="E", 
-                                   background_colour=self.c_background_black, 
-                                   neutral_colour=self.c_neutral_grey, 
-                                   highlight_colour=self.c_neutral_white,
                                    roundness=button_roundness)
-        evi_button.setContentsMargins(0, 0, 0, 0)
+        self.evi_button.setContentsMargins(0, 0, 0, 0)
 
-        b_button = NoteButton(size=button_size, 
+        self.b_button = NoteButton(size=button_size, 
                                    text="B", 
-                                   background_colour=self.c_background_black, 
-                                   neutral_colour=self.c_neutral_grey,
-                                   highlight_colour=self.c_neutral_white,
                                    roundness=button_roundness)
-        b_button.setContentsMargins(0, 0, 0, 0)
+        self.b_button.setContentsMargins(0, 0, 0, 0)
         
-        g_button = NoteButton(size=button_size, 
+        self.g_button = NoteButton(size=button_size, 
                                    text="G", 
-                                   background_colour=self.c_background_black, 
-                                   neutral_colour=self.c_neutral_grey, 
-                                   highlight_colour=self.c_neutral_white,
                                    roundness=button_roundness)
-        g_button.setContentsMargins(0, 0, 0, 0)
+        self.g_button.setContentsMargins(0, 0, 0, 0)
         
-        d_button = NoteButton(size=button_size, 
+        self.d_button = NoteButton(size=button_size, 
                                    text="D", 
-                                   background_colour=self.c_background_black, 
-                                   neutral_colour=self.c_neutral_grey, 
-                                   highlight_colour=self.c_neutral_white,
                                    roundness=button_roundness)
-        d_button.setContentsMargins(0, 0, 0, 0)
+        self.d_button.setContentsMargins(0, 0, 0, 0)
         
-        a_button = NoteButton(size=button_size, 
+        self.a_button = NoteButton(size=button_size, 
                                    text="A", 
-                                   background_colour=self.c_background_black, 
-                                   neutral_colour=self.c_neutral_grey, 
-                                   highlight_colour=self.c_neutral_white,
                                    roundness=button_roundness)
-        a_button.setContentsMargins(0, 0, 0, 0)
+        self.a_button.setContentsMargins(0, 0, 0, 0)
         
-        ei_button = NoteButton(size=button_size, 
+        self.ei_button = NoteButton(size=button_size, 
                                    text="E", 
-                                   background_colour=self.c_background_black, 
-                                   neutral_colour=self.c_neutral_grey, 
-                                   highlight_colour=self.c_neutral_white,
                                    roundness=button_roundness)
-        ei_button.setContentsMargins(0, 0, 0, 0)
+        self.ei_button.setContentsMargins(0, 0, 0, 0)
 
-        tune_guitar_button = TextButton(text='Tune the Guitar')
+        self.calibrate_guitar_button = TextButton(text='Calibrate the Guitar')
+
+        #Button Functions
+        self.string_check = StringPicker()
+        self.evi_button.clicked.connect(self.string_check.click_evi)
+        self.b_button.clicked.connect(self.string_check.click_b)
+        self.g_button.clicked.connect(self.string_check.click_g)
+        self.d_button.clicked.connect(self.string_check.click_d)
+        self.a_button.clicked.connect(self.string_check.click_a)
+        self.ei_button.clicked.connect(self.string_check.click_ei)
+
+        self.calibrate_guitar_button.clicked.connect(self.calibrate_guitar)
+
 
         #Layouts
         first_layout = QVBoxLayout(background_widget)
@@ -120,29 +119,23 @@ class MainWindow(QMainWindow):
         fourth_layout.setContentsMargins(0, 0, 0, 23)
         fourth_layout.setSpacing(0)
 
-        fourth_layout.addWidget(evi_button)
-        fourth_layout.addWidget(b_button)
-        fourth_layout.addWidget(g_button)
-        fourth_layout.addWidget(d_button)
-        fourth_layout.addWidget(a_button)
-        fourth_layout.addWidget(ei_button)
+        fourth_layout.addWidget(self.evi_button)
+        fourth_layout.addWidget(self.b_button)
+        fourth_layout.addWidget(self.g_button)
+        fourth_layout.addWidget(self.d_button)
+        fourth_layout.addWidget(self.a_button)
+        fourth_layout.addWidget(self.ei_button)
 
         third_layout.addLayout(fourth_layout)
         third_layout.addWidget(fretboard_image)
 
         second_layout.addLayout(third_layout)
-        second_layout.addWidget(tune_guitar_button)
+        second_layout.addWidget(self.calibrate_guitar_button)
         second_layout.addWidget(sheet_zone)
         # second_layout.addWidget(self.label)
 
         first_layout.addLayout(second_layout)
         first_layout.setAlignment(second_layout, Qt.AlignCenter)   
-
-    # def line_paint(self):
-    #     painter = QPainter(self.label.pixmap())
-    #     painter.setPen(self.c_neutral_white)
-    #     painter.drawLine(100, 100, 1000, 5000)
-    #     painter.end()
 
     def paintEvent(self, event):
         painter = QPainter(self)
@@ -150,15 +143,26 @@ class MainWindow(QMainWindow):
         painter.drawLine(100, 100, 1000, 5000)
         painter.end()
 
+    def calibrate_guitar(self):
+        #change text button to gold
+        self.calibrate_guitar_button.tuning_start()
 
-    def toggle_e(self, checked):
-        #get the checked state of the button
-        self.test_button_state = checked
-        if self.test_button_state == True:
-            self.test_button.setText('Disabled')
-        elif self.test_button_state == False:
-            self.test_button.setText('Enabled')
-            #self.test_button.setEnabled(True)
+        #change first str button to gold
+        self.evi_button.tuning_start()
+        #run the calibration function
+        self.calibrate_evi = CalibrateGuitar()
+
+        result_queue = queue.Queue()
+        evi = threading.Thread(target=lambda: self.calibrate_evi.get_new_bounds(result_queue)).start()
+        # evi.join()
+        self.bounds_evi = result_queue.get()
+
+        # while not result_queue.empty():
+        #     self.bounds_evi = result_queue.get()
+        #     print(self.bounds_evi)
+
+        self.evi_button.tuning_end()
+
     
 class TextButton(QPushButton):
     def __init__(self, text, parent=None):
@@ -167,6 +171,7 @@ class TextButton(QPushButton):
         self.c_background_black = QColor(50, 50, 51)
         self.c_neutral_grey = QColor(97, 98, 102)
         self.c_neutral_white = QColor(181, 182, 188)
+        self.c_highlight_pastelgold = QColor(222, 205, 135)
 
         self.text = text
 
@@ -202,7 +207,6 @@ class TextButton(QPushButton):
         self.setCheckable(True)
 
     def button_enter_event(self, event):
-        print('button entered')
         def set_style_sheet(color):
             self.setStyleSheet(f"""
                 border: none;
@@ -223,7 +227,6 @@ class TextButton(QPushButton):
         self.anim_letter.start()
 
     def button_leave_event(self, event):
-        print('button left')
         def set_style_sheet(color):
             self.setStyleSheet(f"""
                 border: none;
@@ -238,12 +241,9 @@ class TextButton(QPushButton):
                             """)
 
         if self.isChecked():
-            print("On") 
             self.anim_letter.valueChanged.connect(set_style_sheet)
 
         else:
-            print("Off")
-
             self.anim_letter.setStartValue(QColor(self.c_neutral_white.name()))
             self.anim_letter.setEndValue(QColor(self.c_neutral_grey.name()))
             self.anim_letter.setDuration(250)
@@ -294,17 +294,61 @@ class TextButton(QPushButton):
     def button_click(self, checked):
         print("button clicked", checked)
 
+    def tuning_start (self):
+        def set_style_sheet(color):
+            self.setStyleSheet(f"""
+                border: none;
+                text-align: center;
+                text-decoration: none;
+                color: {color.name()};
+                font-family: Calibri;
+                font-size: 13px;
+                font-weight: light;
+                margin: 0px;
+                padding: 0px;
+                            """)
+
+        self.anim_letter.setStartValue(QColor(self.c_neutral_white.name()))
+        self.anim_letter.setEndValue(QColor(self.c_highlight_pastelgold.name()))
+        self.anim_letter.setDuration(100)
+        self.anim_letter.valueChanged.connect(set_style_sheet)
+        self.anim_letter.start()
+
+    def tuning_end (self):
+        def set_style_sheet(color):
+            self.setStyleSheet(f"""
+                border: none;
+                text-align: center;
+                text-decoration: none;
+                color: {color.name()};
+                font-family: Calibri;
+                font-size: 13px;
+                font-weight: light;
+                margin: 0px;
+                padding: 0px;
+                            """)
+
+        self.anim_letter.setStartValue(QColor(self.c_highlight_pastelgold.name()))
+        self.anim_letter.setEndValue(QColor(self.c_neutral_white.name()))
+        self.anim_letter.setDuration(100)
+        self.anim_letter.valueChanged.connect(set_style_sheet)
+        self.anim_letter.start()
+
 class NoteButton(QPushButton):
-    def __init__(self, size, text, background_colour, neutral_colour, highlight_colour, roundness, parent=None):
+    def __init__(self, size, text, roundness, parent=None):
         super().__init__(parent)
 
         self.setFlat(True)
 
         self.size = size
         self.text = text
-        self.background_colour = background_colour
-        self.neutral_colour = neutral_colour
-        self.highlight_colour = highlight_colour
+
+        self.c_background_black = QColor(50, 50, 51)
+        self.c_neutral_grey = QColor(97, 98, 102)
+        self.c_neutral_white = QColor(181, 182, 188)
+        self.c_highlight_pastelgold = QColor(222, 205, 135)
+        self.c_highlight_crimsonred = QColor(180, 75, 67)
+
         self.roundness = roundness
 
         self.setText(self.text)
@@ -313,8 +357,8 @@ class NoteButton(QPushButton):
             text-align: center;
             text-decoration: none;
             border-radius: {self.roundness}px;
-            background-color: {self.neutral_colour.name()};
-            color: {self.background_colour.name()};
+            background-color: {self.c_neutral_grey.name()};
+            color: {self.c_background_black.name()};
             font-family: Calibri;
             font-size: 15px;
             font-weight: bold;
@@ -346,7 +390,7 @@ class NoteButton(QPushButton):
             text-decoration: none;
             border-radius: {self.roundness}px;
             background-color: {color.name()};;
-            color: {self.background_colour.name()};
+            color: {self.c_background_black.name()};
             font-family: Calibri;
             font-size: 15px;
             font-weight: bold;
@@ -354,17 +398,15 @@ class NoteButton(QPushButton):
             padding: 0px;
                            """)
 
-        self.anim_background.setStartValue(QColor(self.neutral_colour.name()))
-        self.anim_background.setEndValue(QColor(self.highlight_colour.name()))
+        self.anim_background.setStartValue(QColor(self.c_neutral_grey.name()))
+        self.anim_background.setEndValue(QColor(self.c_neutral_white.name()))
         self.anim_background.setDuration(250)
         self.anim_background.valueChanged.connect(set_style_sheet)
         self.anim_background.start()
 
     def button_leave_event(self, event):
         def set_style_sheet():
-            print(f'letter colour - {self.anim_letter.currentValue().name()}')
-            print(f'background colour - {self.anim_background.currentValue().name()}')
-            letter_colour = self.anim_letter.currentValue().name()
+            letter_colour = self.letter_col
             backgorund_colour = self.anim_background.currentValue().name()
             self.setStyleSheet(f"""
             border: none;
@@ -381,38 +423,22 @@ class NoteButton(QPushButton):
                            """)
             
         if self.isChecked():
-            print("On") 
-
-            self.anim_background.setStartValue(QColor(self.highlight_colour.name()))
-            self.anim_background.setEndValue(QColor(self.neutral_colour.name()))
+            self.anim_background.setStartValue(QColor(self.c_neutral_white.name()))
+            self.anim_background.setEndValue(QColor(self.c_neutral_grey.name()))
             self.anim_background.setDuration(250)
+            self.anim_background.valueChanged.connect(set_style_sheet)
+            self.anim_background.start()
 
-            self.anim_letter.setStartValue(QColor(self.neutral_colour.name()))
-            self.anim_letter.setEndValue(QColor(self.highlight_colour.name()))
-            self.anim_letter.setDuration(250)
-
-            self.anim_letter.valueChanged.connect(set_style_sheet)
-
-            self.anim_group.addAnimation(self.anim_letter)
-            self.anim_group.addAnimation(self.anim_background)
-            self.anim_group.start()
+            self.letter_col = self.c_neutral_white.name()
 
         else:
-            print("Off")
-
-            self.anim_background.setStartValue(QColor(self.highlight_colour.name()))
-            self.anim_background.setEndValue(QColor(self.neutral_colour.name()))
+            self.anim_background.setStartValue(QColor(self.c_neutral_white.name()))
+            self.anim_background.setEndValue(QColor(self.c_neutral_grey.name()))
             self.anim_background.setDuration(250)
+            self.anim_background.valueChanged.connect(set_style_sheet)
+            self.anim_background.start()
 
-            self.anim_letter.setStartValue(QColor(self.neutral_colour.name()))
-            self.anim_letter.setEndValue(QColor(self.neutral_colour.name()))
-            self.anim_letter.setDuration(250)
-
-            self.anim_letter.valueChanged.connect(set_style_sheet)
-
-            self.anim_group.addAnimation(self.anim_letter)
-            self.anim_group.addAnimation(self.anim_background)
-            self.anim_group.start()
+            self.letter_col = self.c_background_black.name()
 
     def pressed_animation(self):
 
@@ -423,7 +449,7 @@ class NoteButton(QPushButton):
                 text-decoration: none;
                 border-radius: {self.roundness}px;
                 background-color: {colour.name()};;
-                color: {self.background_colour.name()};
+                color: {self.c_background_black.name()};
                 font-family: Calibri;
                 font-size: 15px;
                 font-weight: bold;
@@ -431,8 +457,8 @@ class NoteButton(QPushButton):
                 padding: 0px;
                             """)
 
-        self.anim_background.setStartValue(QColor(self.highlight_colour.name()))
-        self.anim_background.setEndValue(QColor(self.neutral_colour.name()))
+        self.anim_background.setStartValue(QColor(self.c_neutral_white.name()))
+        self.anim_background.setEndValue(QColor(self.c_neutral_grey.name()))
         self.anim_background.setDuration(100)
         self.anim_background.valueChanged.connect(set_style_sheet)
         self.anim_background.start()
@@ -445,7 +471,7 @@ class NoteButton(QPushButton):
                 text-decoration: none;
                 border-radius: {self.roundness}px;
                 background-color: {colour.name()};;
-                color: {self.background_colour.name()};
+                color: {self.c_background_black.name()};
                 font-family: Calibri;
                 font-size: 15px;
                 font-weight: bold;
@@ -453,15 +479,74 @@ class NoteButton(QPushButton):
                 padding: 0px;
                             """)
 
-        self.anim_background.setStartValue(QColor(self.neutral_colour.name()))
-        self.anim_background.setEndValue(QColor(self.highlight_colour.name()))
+        self.anim_background.setStartValue(QColor(self.c_neutral_grey.name()))
+        self.anim_background.setEndValue(QColor(self.c_neutral_white.name()))
         self.anim_background.setDuration(100)
         self.anim_background.valueChanged.connect(set_style_sheet)
         self.anim_background.start()
 
-
     def button_click(self, checked):
         print("button clicked", checked)
+
+    def tuning_start(self):
+        def set_style_sheet(color):
+            letter_colour = self.tunings_col
+            self.setStyleSheet(f"""
+            border: none;
+            text-align: center;
+            text-decoration: none;
+            border-radius: {self.roundness}px;
+            background-color: {color.name()};
+            color: {letter_colour};
+            font-family: Calibri;
+            font-size: 15px;
+            font-weight: bold;
+            margin: 0px;
+            padding: 0px;
+                        """)
+        
+        if self.isChecked() == True:
+            self.tunings_col = self.c_neutral_white.name()
+
+        elif self.isChecked() == False:
+            self.tunings_col = self.c_background_black.name()
+            
+
+        self.anim_background.setStartValue(QColor(self.c_neutral_grey.name()))
+        self.anim_background.setEndValue(QColor(self.c_highlight_pastelgold.name()))
+        self.anim_background.setDuration(250)
+        self.anim_background.valueChanged.connect(set_style_sheet)
+        self.anim_background.start()
+
+
+    def tuning_end(self):
+        def set_style_sheet(color):
+            letter_colour = self.tuninge_col
+            self.setStyleSheet(f"""
+            border: none;
+            text-align: center;
+            text-decoration: none;
+            border-radius: {self.roundness}px;
+            background-color: {color.name()};
+            color: {letter_colour};
+            font-family: Calibri;
+            font-size: 15px;
+            font-weight: bold;
+            margin: 0px;
+            padding: 0px;
+                        """)
+            
+        if self.isChecked() == True:
+            self.tuninge_col = self.c_neutral_white.name()
+
+        elif self.isChecked() == False:
+            self.tuninge_col = self.c_background_black.name()
+
+        self.anim_background.setStartValue(QColor(self.c_highlight_pastelgold.name()))
+        self.anim_background.setEndValue(QColor(self.c_neutral_grey.name()))
+        self.anim_background.setDuration(250)
+        self.anim_background.valueChanged.connect(set_style_sheet)
+        self.anim_background.start()
 
 class SheetWindow(QWidget):
     def __init__(self, width, height, parent=None):
@@ -500,6 +585,114 @@ class SheetWindow(QWidget):
     def paintEvent(self, event):
         painter = QPainter(self)
         painter.drawPixmap(0, 0, self.pixmap)
+
+class OutlinedLabel(QLabel):
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.w = 1 / 25
+        self.mode = True
+        self.setBrush(Qt.white)
+        self.setPen(Qt.black)
+
+    def scaledOutlineMode(self):
+        return self.mode
+
+    def setScaledOutlineMode(self, state):
+        self.mode = state
+
+    def outlineThickness(self):
+        return self.w * self.font().pointSize() if self.mode else self.w
+
+    def setOutlineThickness(self, value):
+        self.w = value
+
+    def setBrush(self, brush):
+        if not isinstance(brush, QBrush):
+            brush = QBrush(brush)
+        self.brush = brush
+
+    def setPen(self, pen):
+        if not isinstance(pen, QPen):
+            pen = QPen(pen)
+        pen.setJoinStyle(Qt.RoundJoin)
+        self.pen = pen
+
+    def sizeHint(self):
+        w = math.ceil(self.outlineThickness() * 2)
+        return super().sizeHint() + QSize(w, w)
+    
+    def minimumSizeHint(self):
+        w = math.ceil(self.outlineThickness() * 2)
+        return super().minimumSizeHint() + QSize(w, w)
+    
+    def paintEvent(self, event):
+        w = self.outlineThickness()
+        rect = self.rect()
+        metrics = QFontMetrics(self.font())
+        tr = metrics.boundingRect(self.text()).adjusted(0, 0, w, w)
+        if self.indent() == -1:
+            if self.frameWidth():
+                indent = (metrics.boundingRect('x').width() + w * 2) / 2
+            else:
+                indent = w
+        else:
+            indent = self.indent()
+
+        if self.alignment() & Qt.AlignLeft:
+            x = rect.left() + indent - min(metrics.leftBearing(self.text()[0]), 0)
+        elif self.alignment() & Qt.AlignRight:
+            x = rect.x() + rect.width() - indent - tr.width()
+        else:
+            x = (rect.width() - tr.width()) / 2
+            
+        if self.alignment() & Qt.AlignTop:
+            y = rect.top() + indent + metrics.ascent()
+        elif self.alignment() & Qt.AlignBottom:
+            y = rect.y() + rect.height() - indent - metrics.descent()
+        else:
+            y = (rect.height() + metrics.ascent() - metrics.descent()) / 2
+
+        path = QPainterPath()
+        path.addText(x, y, self.font(), self.text())
+        qp = QPainter(self)
+        qp.setRenderHint(QPainter.Antialiasing)
+
+        self.pen.setWidthF(w * 2)
+        qp.strokePath(path, self.pen)
+        if 1 < self.brush.style() < 15:
+            qp.fillPath(path, self.palette().window())
+        qp.fillPath(path, self.brush)
+
+class DrawNote(QLabel):
+    def __init__(self, text, position, state, parent=None):
+        super().__init__(parent)
+
+        self.c_background_black = QColor(50, 50, 51)
+        self.c_neutral_grey = QColor(97, 98, 102)
+        self.c_neutral_white = QColor(181, 182, 188)
+        self.c_highlight_pastelgold = QColor(222, 205, 135)
+        self.c_highlight_crimsonred = QColor(180, 75, 67)
+
+        self.text = text
+
+        note = OutlinedLabel(self.text, alignemnt=Qt.AlignCenter)
+        note.setStyleSheet(
+            '''
+            font-family: Calibri; 
+            font-size: 15px;
+            font-weight: light;
+            '''
+        )
+
+        note.setPen(self.c_background_black.name()) #Qt colour
+        note.setBrush(self.c_neutral_grey.name()) #Qt colour
+
+    def update_note(state):
+        pass
+
+
+
 
 
 #Qapplication instance
