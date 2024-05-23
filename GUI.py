@@ -1,4 +1,4 @@
-from PySide6.QtCore import QSize, Qt, QPropertyAnimation, QEasingCurve, Signal, Property, QParallelAnimationGroup
+from PySide6.QtCore import QSize, Qt, QPropertyAnimation, QEasingCurve, Signal, Property, QParallelAnimationGroup, QThread, Signal, QEventLoop
 from PySide6.QtWidgets import QApplication, QWidget, QPushButton, QMainWindow, QVBoxLayout, QLabel, QHBoxLayout, QScrollArea, QSizePolicy
 from PySide6.QtGui import QPaintEvent, QPixmap, QPainter, QColor, QIcon, QResizeEvent, QPen, QBrush, QFont, QPalette, QPen, QFontMetrics, QPainterPath
 from PySide6.QtSvg import QSvgRenderer
@@ -11,7 +11,7 @@ import threading
 import time
 import queue
 
-from sound_processing import StringPicker, CalibrateGuitar
+from sound_processing import StringPicker, CalibrateGuitar, SoundProcessing
 
 #Widgets
 class MainWindow(QMainWindow):
@@ -137,6 +137,9 @@ class MainWindow(QMainWindow):
         first_layout.addLayout(second_layout)
         first_layout.setAlignment(second_layout, Qt.AlignCenter)   
 
+        self.calibrate_guitar_thread = None
+        self.loop = QEventLoop()
+
     def paintEvent(self, event):
         painter = QPainter(self)
         painter.setPen(self.c_neutral_white)
@@ -144,26 +147,86 @@ class MainWindow(QMainWindow):
         painter.end()
 
     def calibrate_guitar(self):
-        #change text button to gold
+        self.bounds_list = []
+
+        string_evi = 'evi'
+        string_b = 'b'
+        string_g = 'g'
+        string_d = 'd'
+        string_a = 'a'
+        string_ei = 'ei'
+
+        # animate calibrate guitar button
         self.calibrate_guitar_button.tuning_start()
 
-        #change first str button to gold
-        self.evi_button.tuning_start()
-        #run the calibration function
-        self.calibrate_evi = CalibrateGuitar()
-
-        result_queue = queue.Queue()
-        evi = threading.Thread(target=lambda: self.calibrate_evi.get_new_bounds(result_queue)).start()
-        # evi.join()
-        self.bounds_evi = result_queue.get()
-
-        # while not result_queue.empty():
-        #     self.bounds_evi = result_queue.get()
-        #     print(self.bounds_evi)
-
+        # evi button
+        self.evi_button.tuning_start() #animate
+        self.calibrate_guitar_calculate(string_evi) #calculate
+        print("calibrated evi")
         self.evi_button.tuning_end()
 
-    
+        # b button
+        self.b_button.tuning_start()
+        self.calibrate_guitar_calculate(string_b)
+        print("calibrated b")
+        self.b_button.tuning_end()
+
+        # g button
+        self.g_button.tuning_start()
+        self.calibrate_guitar_calculate(string_g) #calculate
+        print("calibrated g")
+        self.g_button.tuning_end()
+
+        # d button
+        self.d_button.tuning_start()
+        self.calibrate_guitar_calculate(string_d) #calculate
+        print("calibrated d")
+        self.d_button.tuning_end()
+
+        # a button
+        self.a_button.tuning_start()
+        self.calibrate_guitar_calculate(string_a) #calculate
+        print("calibrated a")
+        self.a_button.tuning_end()
+
+        # ei button
+        self.ei_button.tuning_start()
+        self.calibrate_guitar_calculate(string_ei) #calculate
+        print("calibrated ei")
+        self.ei_button.tuning_end()
+
+        self.calibrate_guitar_button.tuning_end()
+        print(self.bounds_list)
+
+    def calibrate_guitar_calculate(self, string):
+        self.calibrate_guitar_thread = CalibrateGuitar(string)
+        self.calibrate_guitar_thread.finished.connect(self.stop_calib_temp)
+        self.calibrate_guitar_thread.start()
+        self.loop.exec()
+
+    def stop_calib_temp(self, result):
+        print("finished signal worked")
+        self.bounds_list.append(result)
+        print(result)
+        self.loop.quit()
+
+    def start_reset(self):
+        self.note_list = self.generate_notes()
+        self.checker_thread = SoundProcessing(mode_list=self.string_check.mode_list, bound_list=self.bounds_list, note_list=self.note_list)
+        #develop sound processing
+        pass
+
+    def generate_notes(self): #generate and draw the notes
+        self.string_check.key_str_list
+        for i in range(50, self.sheet_height, 150):
+            for h_line in np.linspace(0, 100, 6).tolist():
+                paint = DrawNote(text=, position=, state=)
+                painter = QPainter(self)
+                painter.drawLine(25, i + h_line, self.sheet_width - 25, i + h_line)
+        for i in range(1,48):
+
+            pass
+
 class TextButton(QPushButton):
     def __init__(self, text, parent=None):
         super().__init__(parent)
@@ -294,7 +357,7 @@ class TextButton(QPushButton):
     def button_click(self, checked):
         print("button clicked", checked)
 
-    def tuning_start (self):
+    def tuning_start(self):
         def set_style_sheet(color):
             self.setStyleSheet(f"""
                 border: none;
@@ -314,7 +377,7 @@ class TextButton(QPushButton):
         self.anim_letter.valueChanged.connect(set_style_sheet)
         self.anim_letter.start()
 
-    def tuning_end (self):
+    def tuning_end(self):
         def set_style_sheet(color):
             self.setStyleSheet(f"""
                 border: none;

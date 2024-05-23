@@ -5,6 +5,7 @@ import random
 import statistics
 import numpy as np
 import queue
+from PySide6.QtCore import QThread, Signal, QEventLoop
 
 # pitch table
 
@@ -456,17 +457,20 @@ class StringPicker():
 
         self.key_list  = []
         self.key_str_list = []
+        self.mode_list = []
 
     def click_evi(self, checked):
         if checked == True:
             self.key_list.append(i_string)
             self.key_str_list.append(i_string_str)
+            self.mode_list.append('evi')
             print(self.key_list)
 
         elif checked == False:
             try:
                 self.key_list.remove(i_string)
                 self.key_str_list.remove(i_string_str)
+                self.mode_list.remove('evi')
             except:
                 pass
 
@@ -474,11 +478,13 @@ class StringPicker():
         if checked == True:
             self.key_list.append(ii_string)
             self.key_str_list.append(ii_string_str)
+            self.mode_list.append('b')
 
         elif checked == False:
             try:
                 self.key_list.remove(ii_string)
                 self.key_str_list.remove(ii_string_str)
+                self.mode_list.remove('b')
             except:
                 pass
 
@@ -486,11 +492,13 @@ class StringPicker():
         if checked == True:
             self.key_list.append(iii_string)
             self.key_str_list.append(iii_string_str)
+            self.mode_list.append('g')
 
         elif checked == False:
             try:
                 self.key_list.remove(iii_string)
                 self.key_str_list.remove(iii_string_str)
+                self.mode_list.remove('g')
             except:
                 pass
 
@@ -498,11 +506,13 @@ class StringPicker():
         if checked == True:
             self.key_list.append(iv_string)
             self.key_str_list.append(iv_string_str)
+            self.mode_list.append('d')
 
         elif checked == False:
             try:
                 self.key_list.remove(iv_string)
                 self.key_str_list.remove(iv_string_str)
+                self.mode_list.remove('d')
             except:
                 pass
 
@@ -510,11 +520,13 @@ class StringPicker():
         if checked == True:
             self.key_list.append(v_string)
             self.key_str_list.append(v_string_str)
+            self.mode_list.append('a')
 
         elif checked == False:
             try:
                 self.key_list.remove(v_string)
                 self.key_str_list.remove(v_string_str)
+                self.mode_list.remove('a')
             except:
                 pass
 
@@ -522,147 +534,175 @@ class StringPicker():
         if checked == True:
             self.key_list.append(vi_string)
             self.key_str_list.append(vi_string_str)
+            self.mode_list.append('ei')
 
         elif checked == False:
             try:
                 self.key_list.remove(vi_string)
                 self.key_str_list.remove(vi_string_str)
+                self.mode_list.remove('ei')
             except:
                 pass
 
-class CalibrateGuitar():
-        def __init__(self):
-            BUFFER_SIZE = 2048
-            self.buffer_size = BUFFER_SIZE
-            FORMAT = pyaudio.paFloat32
-            CHANNELS = 1
-            RATE = 44100
+class CalibrateGuitar(QThread):
+    finished = Signal(object)
 
-            p = pyaudio.PyAudio()
-            self.stream = p.open(format=FORMAT,
-                            channels=CHANNELS,
-                            rate=RATE,
-                            input=True,
-                            frames_per_buffer=BUFFER_SIZE)
-            
-            # Initialize aubio pitch detection
-            self.pDetection = aubio.pitch("default", BUFFER_SIZE, BUFFER_SIZE, RATE)
-            self.pDetection.set_unit("Hz")
-            self.pDetection.set_silence(-70)
-            self.pDetection.set_tolerance(0.8)
-
-            self.time_to_average = 0.2
-            self.time_buffer = int(RATE / BUFFER_SIZE * self.time_to_average)
-            self.pitch_buffer = []
-            self.good_sample_count = 12
-            self.fq_threshold = 60
-
-        def get_new_bounds(self, return_queue):
-            self.string_tuner()
-            self.converted = self.fq_converter(recorded = self.good_sample_mode, string=vi_string)
-            bounds = self.bounds(self.converted)
-            # print(bounds)
-            return_queue.put(self.bounds(self.converted))
-
-
-        def record_pitch(self):
-            pitch_list = []
-
-            while len(pitch_list) <= self.time_buffer:
-                # Get audio input
-                audio_data = np.frombuffer(self.stream.read(self.buffer_size), dtype=np.float32)
-
-                # Detect pitch (note) from audio input
-                pitch = self.pDetection(audio_data)[0]
-
-                #Make a list
-                if pitch is not None and pitch >= self.fq_threshold:
-                    pitch_list.append(int(pitch))
-
-            pitch_buffer_mode = statistics.mode(pitch_list)
-
-            return pitch_buffer_mode
-        
-        def string_tuner(self):
-            # record with a while loop untill x number of samples is collected
-            good_samples = []
-
-            while len(good_samples) < self.good_sample_count:
-                
-                # record
-                sample = self.record_pitch()
-                good_samples.append(sample)
-
-            # get the mean of the sample
-            self.good_sample_mode = statistics.mode(good_samples)
-
-        def fq_converter(self, recorded, string):
-            diff = recorded - string[0]
-            string_array = np.array(string)
-            conv_string = string_array - diff
-            return conv_string
-
-        def bounds(self, x_string_conv):
-            # get middle valu between each key on a string
-            x_range_shifted = np.roll(x_string_conv, 1)
-            x_range_mid = (x_string_conv[1:] + x_range_shifted[1:]) / 2
-
-            # get the lowest bound
-            x_bound_0 = 2 * x_string_conv[0] - x_range_mid[0]
-
-            # get the highest bound
-            x_bound_1 = 2 * x_string_conv[-1] - x_range_mid[-1]
-
-            # complete bounds
-            x_bound_floor = np.insert(x_range_mid, 0, x_bound_0)
-            x_bound_ceiling = np.insert(x_range_mid, len(x_range_mid), x_bound_1)
-
-            # generate bounds list
-            bound_list = [[a, b] for a, b in zip(x_bound_floor, x_bound_ceiling)]
-            bound_list = np.array(bound_list)
-
-            return bound_list
-
-class SoundProcessing():
-    def __init__(self):
-        # Initialize audio input
+    def __init__(self, string):
+        super().__init__()
         BUFFER_SIZE = 2048
+        self.buffer_size = BUFFER_SIZE
         FORMAT = pyaudio.paFloat32
         CHANNELS = 1
         RATE = 44100
 
-        p = pyaudio.PyAudio()
-        stream = p.open(format=FORMAT,
+        self.p = pyaudio.PyAudio()
+        self.stream = self.p.open(format=FORMAT,
                         channels=CHANNELS,
                         rate=RATE,
                         input=True,
-                        frames_per_buffer=BUFFER_SIZE)
-
+                        frames_per_buffer=BUFFER_SIZE,
+                        input_device_index=1)
+        
         # Initialize aubio pitch detection
-        pDetection = aubio.pitch("default", BUFFER_SIZE, BUFFER_SIZE, RATE)
-        pDetection.set_unit("Hz")
-        pDetection.set_silence(-70)
-        pDetection.set_tolerance(0.8)
+        self.pDetection = aubio.pitch("default", BUFFER_SIZE, BUFFER_SIZE, RATE)
+        self.pDetection.set_unit("Hz")
+        self.pDetection.set_silence(-70)
+        self.pDetection.set_tolerance(0.8)
 
-        time_to_average = 0.2
-        self.time_buffer = int(RATE / BUFFER_SIZE * time_to_average)
-        pitch_buffer = []
+        self.time_to_average = 0.2
+        self.time_buffer = int(RATE / BUFFER_SIZE * self.time_to_average)
+        self.pitch_buffer = []
         self.good_sample_count = 12
         self.fq_threshold = 60
 
-        def fq_to_key(pitch, string, bounds):
-            floor = bounds[:, 0]
-            ceiling = bounds[:, 1]
+        if string == 'evi':
+            self.string_value = i_string
+        if string == 'b':
+            self.string_value = ii_string
+        if string == 'g':
+            self.string_value = iii_string
+        if string == 'd':
+            self.string_value = iv_string
+        if string == 'a':
+            self.string_value = v_string
+        if string == 'ei':
+            self.string_value = vi_string
 
-            true_array = np.logical_and(floor <= pitch, pitch <= ceiling)
-            index = np.where(true_array == True)[0]
+        self._running = True
 
-            if len(index) > 0:
-                key = string[index[0]]
-            else:
-                key = ['not_key']
+    def run(self):
+        # pitch_list = []
+        # while len(pitch_list) <= self.time_buffer:
+        #     # Get audio input
+        #     audio_data = np.frombuffer(self.stream.read(self.buffer_size), dtype=np.float32)
 
-            return key
+        #     # Detect pitch (note) from audio input
+        #     pitch = self.pDetection(audio_data)[0]
+
+        #     #Make a list
+        #     if pitch is not None and pitch >= self.fq_threshold:
+        #         pitch_list.append(int(pitch))
+        #     print(pitch_list)
+
+        self.get_new_bounds()
+        self.stream.stop_stream()
+        self.stream.close()
+        self.p.terminate()
+        self.finished.emit(self.result)
+
+    def get_new_bounds(self):
+        self.string_tuner()
+        self.converted = self.fq_converter(recorded = self.good_sample_mode, string=self.string_value)
+        self.result = self.bounds(self.converted)
+
+    def record_pitch(self):
+        pitch_list = []
+
+        while len(pitch_list) <= self.time_buffer:
+            # Get audio input
+            audio_data = np.frombuffer(self.stream.read(self.buffer_size), dtype=np.float32)
+
+            # Detect pitch (note) from audio input
+            pitch = self.pDetection(audio_data)[0]
+
+            #Make a list
+            if pitch is not None and pitch >= self.fq_threshold:
+                pitch_list.append(int(pitch))
+
+        pitch_buffer_mode = statistics.mode(pitch_list)
+
+        return pitch_buffer_mode
+    
+    def string_tuner(self):
+        # record with a while loop untill x number of samples is collected
+        good_samples = []
+
+        while len(good_samples) < self.good_sample_count:
+            
+            # record
+            sample = self.record_pitch()
+            good_samples.append(sample)
+
+        # get the mean of the sample
+        self.good_sample_mode = statistics.mode(good_samples)
+
+    def fq_converter(self, recorded, string):
+        diff = recorded - string[0]
+        string_array = np.array(string)
+        conv_string = string_array - diff
+        return conv_string
+
+    def bounds(self, x_string_conv):
+        # get middle valu between each key on a string
+        x_range_shifted = np.roll(x_string_conv, 1)
+        x_range_mid = (x_string_conv[1:] + x_range_shifted[1:]) / 2
+
+        # get the lowest bound
+        x_bound_0 = 2 * x_string_conv[0] - x_range_mid[0]
+
+        # get the highest bound
+        x_bound_1 = 2 * x_string_conv[-1] - x_range_mid[-1]
+
+        # complete bounds
+        x_bound_floor = np.insert(x_range_mid, 0, x_bound_0)
+        x_bound_ceiling = np.insert(x_range_mid, len(x_range_mid), x_bound_1)
+
+        # generate bounds list
+        bound_list = [[a, b] for a, b in zip(x_bound_floor, x_bound_ceiling)]
+        bound_list = np.array(bound_list)
+
+        return bound_list
+
+class SoundProcessing(QThread):
+    update = Signal(object)
+
+    def __init__(self, mode_list, bound_list, note_list):
+        super().__init__()
+        BUFFER_SIZE = 2048
+        self.buffer_size = BUFFER_SIZE
+        FORMAT = pyaudio.paFloat32
+        CHANNELS = 1
+        RATE = 44100
+
+        self.p = pyaudio.PyAudio()
+        self.stream = self.p.open(format=FORMAT,
+                        channels=CHANNELS,
+                        rate=RATE,
+                        input=True,
+                        frames_per_buffer=BUFFER_SIZE,
+                        input_device_index=1)
+        
+        # Initialize aubio pitch detection
+        self.pDetection = aubio.pitch("default", BUFFER_SIZE, BUFFER_SIZE, RATE)
+        self.pDetection.set_unit("Hz")
+        self.pDetection.set_silence(-70)
+        self.pDetection.set_tolerance(0.8)
+
+        self.time_to_average = 0.2
+        self.time_buffer = int(RATE / BUFFER_SIZE * self.time_to_average)
+        self.pitch_buffer = []
+        self.good_sample_count = 12
+        self.fq_threshold = 60
 
         # Generate a random key
         key_array = np.array(key_list)
@@ -671,63 +711,82 @@ class SoundProcessing():
         key_str_array = np.array(key_str_list)
         key_str_list = key_str_array.flatten()
 
-        random_list = list(range(len(key_str_list)))
-
-        while True:
-            try:
-                # generate a random key
-                random.shuffle(random_list)
-                random_int = random_list[0]
-                random_key = key_str_list[random_int]
-
-                # print a random key
-                print(f'Play: {random_key}')
+        for note in note_list:
 
                 recorded_key = 1
 
-                while recorded_key != random_key:
+                while recorded_key != note:
                     # get the current pitch
-                    recorded = record_pitch(self)
+                    recorded = self.record_pitch()
 
                     # test if the current pitch matches a key in each string
-                    if 'i' in mode_list:
-                        i_recorded_key = fq_to_key(pitch=recorded, string=i_string_str, bounds=i_bounds)
-                    if 'ii' in mode_list:
-                        ii_recorded_key = fq_to_key(pitch=recorded, string=ii_string_str, bounds=ii_bounds)
-                    if 'iii' in mode_list:
-                        iii_recorded_key = fq_to_key(pitch=recorded, string=iii_string_str, bounds=iii_bounds)
-                    if 'iv' in mode_list:
-                        iv_recorded_key = fq_to_key(pitch=recorded, string=iv_string_str, bounds=iv_bounds)
-                    if 'v' in mode_list:
-                        v_recorded_key = fq_to_key(pitch=recorded, string=v_string_str, bounds=v_bounds)
-                    if 'vi' in mode_list:
-                        vi_recorded_key = fq_to_key(pitch=recorded, string=vi_string_str, bounds=vi_bounds)
+                    if 'evi' in mode_list:
+                        i_recorded_key = self.fq_to_key(pitch=recorded, string=i_string_str, bounds=bound_list[0])
+                    if 'b' in mode_list:
+                        ii_recorded_key = self.fq_to_key(pitch=recorded, string=ii_string_str, bounds=bound_list[1])
+                    if 'g' in mode_list:
+                        iii_recorded_key = self.fq_to_key(pitch=recorded, string=iii_string_str, bounds=bound_list[2])
+                    if 'd' in mode_list:
+                        iv_recorded_key = self.fq_to_key(pitch=recorded, string=iv_string_str, bounds=bound_list[3])
+                    if 'a' in mode_list:
+                        v_recorded_key = self.fq_to_key(pitch=recorded, string=v_string_str, bounds=bound_list[4])
+                    if 'ei' in mode_list:
+                        vi_recorded_key = self.fq_to_key(pitch=recorded, string=vi_string_str, bounds=bound_list[5])
 
                     keys = []
 
                     for string in mode_list:
-                        if string == 'i':
+                        if string == 'evi':
                             keys.append(i_recorded_key)
-                        if string == 'ii':
+                        if string == 'b':
                             keys.append(ii_recorded_key)
-                        if string == 'iii':
+                        if string == 'g':
                             keys.append(iii_recorded_key)
-                        if string == 'iv':
+                        if string == 'd':
                             keys.append(iv_recorded_key)
-                        if string == 'v':
+                        if string == 'a':
                             keys.append(v_recorded_key)
-                        if string == 'vi':
+                        if string == 'ei':
                             keys.append(vi_recorded_key)
 
                     for key in keys:
-                        if key == random_key:
+                        if key == note:
                             recorded_key = key
 
                 recorded_key = []
 
-            except KeyboardInterrupt:
-                break
+        self.stream.stop_stream()
+        self.stream.close()
+        self.p.terminate()
 
-        stream.stop_stream()
-        stream.close()
-        p.terminate()
+    def fq_to_key(pitch, string, bounds):
+        floor = bounds[:, 0]
+        ceiling = bounds[:, 1]
+
+        true_array = np.logical_and(floor <= pitch, pitch <= ceiling)
+        index = np.where(true_array == True)[0]
+
+        if len(index) > 0:
+            key = string[index[0]]
+        else:
+            key = ['not_key']
+
+        return key
+    
+    def record_pitch(self):
+        pitch_list = []
+
+        while len(pitch_list) <= self.time_buffer:
+            # Get audio input
+            audio_data = np.frombuffer(self.stream.read(self.buffer_size), dtype=np.float32)
+
+            # Detect pitch (note) from audio input
+            pitch = self.pDetection(audio_data)[0]
+
+            #Make a list
+            if pitch is not None and pitch >= self.fq_threshold:
+                pitch_list.append(int(pitch))
+
+        pitch_buffer_mode = statistics.mode(pitch_list)
+
+        return pitch_buffer_mode
