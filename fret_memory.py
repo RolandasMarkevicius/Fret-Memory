@@ -548,6 +548,20 @@ def fq_to_key(pitch, string, bounds):
 
     return key
 
+vi_bounds = bounds(vi_string)
+v_bounds = bounds(v_string)
+iv_bounds = bounds(iv_string)
+iii_bounds = bounds(iii_string)
+ii_bounds = bounds(ii_string)
+i_bounds = bounds(i_string)
+
+print(i_bounds)
+print(ii_bounds)
+print(iii_bounds)
+print(iv_bounds)
+print(v_bounds)
+print(vi_bounds)
+
 mode = input('Hi:) What do you want to practice today? \n(Enter the strings you want to practice): ')
 mode_list = mode.split(sep=', ')
 

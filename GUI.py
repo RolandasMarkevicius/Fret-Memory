@@ -12,7 +12,7 @@ import time
 import queue
 import random
 
-from sound_processing import StringPicker, CalibrateGuitar, SoundProcessing
+from sound_processing import StringPicker, CalibrateGuitar, SoundProcessing, StandardBounds
 
 #Widgets
 class MainWindow(QMainWindow):
@@ -26,6 +26,10 @@ class MainWindow(QMainWindow):
         self.c_background_black = QColor(50, 50, 51)
         self.c_neutral_grey = QColor(97, 98, 102)
         self.c_neutral_white = QColor(181, 182, 188)
+
+        #Default bounds:
+        self.starter_bounds = StandardBounds()
+        self.bounds_list = self.starter_bounds.bounds_list
 
         #Background setup
         background_widget = QWidget()
@@ -50,7 +54,11 @@ class MainWindow(QMainWindow):
 
         self.string_check = StringPicker()
 
-        sheet_widget = SheetWindow(width=1500, height=5000, key_list=self.string_check.key_list, key_str_list=self.string_check.key_str_list)
+        sheet_widget = SheetWindow(width=1500, height=5000, 
+                                   key_list=self.string_check.key_list, 
+                                   key_str_list=self.string_check.key_str_list, 
+                                   mode_list=self.string_check.mode_list,
+                                   bound_list=self.bounds_list)
         sheet_zone.setWidget(sheet_widget)
         sheet_zone.setFixedSize(QSize(1500, 500))
 
@@ -215,8 +223,6 @@ class MainWindow(QMainWindow):
         self.bounds_list.append(result)
         print(result)
         self.loop.quit()
-
-
 
 class TextButton(QPushButton):
     def __init__(self, text, parent=None):
@@ -730,11 +736,14 @@ class NoteButton(QPushButton):
         self.anim_background.start()
 
 class SheetWindow(QWidget):
-    def __init__(self, width, height, key_list, key_str_list, parent=None):
+    def __init__(self, width, height, key_list, key_str_list, mode_list, bound_list, parent=None):
         super().__init__(parent)
 
         self.key_list = key_list
         self.key_str_list = key_str_list
+        self.mode_list = mode_list
+        self.bound_list = bound_list
+        
 
         self.c_background_black = QColor(50, 50, 51)
         self.c_neutral_grey = QColor(97, 98, 102)
@@ -745,9 +754,12 @@ class SheetWindow(QWidget):
         self.setMinimumSize(width, height)
         self.sheet_height = height
         self.sheet_width = width
+        self.current_pitch = 0
+        self.note_idx = 0
         self.initsheetlines()
 
     def initsheetlines(self):
+
         self.pixmap = QPixmap(self.sheet_width, self.sheet_height)
         self.pixmap.fill(self.c_background_black)
 
@@ -776,12 +788,11 @@ class SheetWindow(QWidget):
 
     def start_reset(self):
         self.generate_notes()
-        #self.note_list = self.generate_notes()
-        #self.checker_thread = SoundProcessing(mode_list=self.string_check.mode_list, bound_list=self.bounds_list, note_list=self.note_list)
-        #develop sound processing
+        self.start_recording()
 
     def generate_notes(self): #generate and draw the notes
         #key values
+
         key_array = np.array(self.key_list)
         key_list_f = key_array.flatten()
 
@@ -791,74 +802,19 @@ class SheetWindow(QWidget):
 
         random_list = list(range(len(key_str_list_f)))
 
-        
+        # generate a random key list
+        self.rng_note_list = []
+
         note_nr = self.length * 23
         for i in range(note_nr):
             random.shuffle(random_list)
-            #print(random_list)
             random_idx = random_list[0]
-            #print(random_idx)
             random_key_str = key_str_list_f[random_idx]
-            y_idx = i // 23
-            x_idx = i % 23
+            self.rng_note_list.append(random_key_str)
 
-            #get position
-            if random_key_str[0] == 'i' and random_key_str[1] != 'i':
-                position_x = self.xcoor[x_idx] + self.xcoor[0]
-                position_y = self.ycoor[y_idx] + self.stringcoor[0]
+        for idx, random_key_str in enumerate(self.rng_note_list):
 
-            if random_key_str[0] == 'i' and random_key_str[1] == '1' and random_key_str[2] != 'i':
-                position_x = self.xcoor[x_idx] + self.xcoor[0]
-                position_y = self.ycoor[y_idx] + self.stringcoor[1]
-
-            if random_key_str[0] == 'i' and random_key_str[1] == '1' and random_key_str[2] == 'i':
-                position_x = self.xcoor[x_idx] + self.xcoor[0]
-                position_y = self.ycoor[y_idx] + self.stringcoor[2]
-
-            if random_key_str[0] == 'i' and random_key_str[1] == 'v':
-                position_x = self.xcoor[x_idx] + self.xcoor[0]
-                position_y = self.ycoor[y_idx] + self.stringcoor[3]
-
-            if random_key_str[0] == 'v' and random_key_str[1] != 'i':
-                position_x = self.xcoor[x_idx] + self.xcoor[0]
-                position_y = self.ycoor[y_idx] + self.stringcoor[4]
-
-            if random_key_str[0] == 'v' and random_key_str[1] == 'i':
-                position_x = self.xcoor[x_idx] + self.xcoor[0]
-                position_y = self.ycoor[y_idx] + self.stringcoor[5]
-
-            # self.initsheetlines()
-
-            # painter = QPainter(self.pixmap)
-            # painter.setRenderHint(QPainter.Antialiasing)
-            # self.font = QFont("Calibri", 12, weight=6000)
-            # painter.setFont(self.font)
-            # self.text = random_key_str
-
-
-            # self.setAttribute(Qt.WA_TranslucentBackground)
-            # self.show()
-            #print(int(position_x))
-            
-            # Draw text outline
-            # outline_pen.setWidth(1)
-            # painter.setPen(QPen(self.c_highlight_pastelgold, 5, Qt.SolidLine))            
-            # painter.drawText(int(position_x), int(position_y), self.text)
-            # painter.end()
-
-            # painter = QPainter(self.pixmap)
-            # painter.setRenderHint(QPainter.Antialiasing)
-            # thin_font = QFont("Calibri", 12, weight=300)
-            # painter.setFont(thin_font)
-            # self.text = random_key_str
-
-            # path = QPainterPath()
-            # path.addText(int(position_x), int(position_y), thin_font, self.text)
-
-            # # Draw text fill
-            # painter.setPen(QPen(self.c_neutral_grey, 0.25, Qt.SolidLine))
-            # painter.drawText(int(position_x), int(position_y), self.text)
-            # painter.end()
+            position = self.key_position(idx=idx, string=random_key_str)
 
             painter = QPainter(self.pixmap)
             painter.setRenderHint(QPainter.Antialiasing)
@@ -867,187 +823,112 @@ class SheetWindow(QWidget):
             self.text = random_key_str
 
             path = QPainterPath()
-            path.addText(int(position_x), int(position_y), font, self.text)
+            path.addText(int(position[0]), int(position[1]), font, self.text)
 
             # outline_pen = QPen(self.c_background_black, 5, Qt.SolidLine)
             painter.strokePath(path, QPen(self.c_background_black, 10, Qt.SolidLine))
 
             # Draw text fill
             painter.setPen(QPen(self.c_neutral_grey, 0.25, Qt.SolidLine))
-            painter.drawText(int(position_x), int(position_y), self.text)
+            painter.drawText(int(position[0]), int(position[1]), self.text)
             painter.end()
 
+    def start_recording(self):
+        self.recording_thread = SoundProcessing(mode_list=self.mode_list, 
+                                                bound_list = self.bound_list, 
+                                                note_list=self.rng_note_list)
+        self.recording_thread.update.connect(self.recording_result)
+        self.recording_thread.start()
 
-            # path = QPainterPath()
-            # path.addText(position_x, position_y, self.font(), self.text())
-            # qp = QPainter(self.pixmap)
-            # qp.setRenderHint(QPainter.Antialiasing)
+    def recording_result(self, result):
+        self.current_key = result
+        print(result)
 
-            # self.pen.setWidthF(50)
-            # qp.strokePath(path, self.pen)
-            # if 1 < self.brush.style() < 15:
-            #     qp.fillPath(path, self.palette().window())
-            # qp.fillPath(path, self.brush)
+        if result == True:
+            print(self.note_idx)
+            position = self.key_position(idx=self.note_idx, string=self.rng_note_list[self.note_idx])
 
-            # DrawNote(sheetwindow_pixmap=self.pixmap, text=random_key_str, position_x=position_x, position_y=position_y, state="on")
+            painter = QPainter(self.pixmap)
+            painter.setRenderHint(QPainter.Antialiasing)
+            font = QFont("Calibri", 12, weight=500)
+            painter.setFont(font)
+            self.text = self.rng_note_list[self.note_idx]
 
+            path = QPainterPath()
+            path.addText(int(position[0]), int(position[1]), font, self.text)
+
+            # outline_pen = QPen(self.c_background_black, 5, Qt.SolidLine)
+            painter.strokePath(path, QPen(self.c_background_black, 10, Qt.SolidLine))
+
+            # Draw text fill
+            painter.setPen(QPen(self.c_neutral_white, 0.25, Qt.SolidLine))
+            painter.drawText(int(position[0]), int(position[1]), self.text)
+            painter.end()
+
+            self.note_idx += 1
+            print(self.note_idx)
+
+        if result == False:
+            print(self.note_idx)
+            position = self.key_position(idx=self.note_idx, string=self.rng_note_list[self.note_idx])
+
+            painter = QPainter(self.pixmap)
+            painter.setRenderHint(QPainter.Antialiasing)
+            font = QFont("Calibri", 12, weight=500)
+            painter.setFont(font)
+            self.text = self.rng_note_list[self.note_idx]
+
+            path = QPainterPath()
+            path.addText(int(position[0]), int(position[1]), font, self.text)
+
+            # outline_pen = QPen(self.c_background_black, 5, Qt.SolidLine)
+            painter.strokePath(path, QPen(self.c_background_black, 10, Qt.SolidLine))
+
+            # Draw text fill
+            painter.setPen(QPen(self.c_highlight_crimsonred, 0.25, Qt.SolidLine))
+            painter.drawText(int(position[0]), int(position[1]), self.text)
+            painter.end()
 
     def paintEvent(self, event):
         painter = QPainter(self)
         painter.drawPixmap(0, 0, self.pixmap)
-
         self.update()
 
-class OutlinedLabel(QLabel):
-    
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.w = 1 / 25
-        self.mode = True
-        self.setBrush(Qt.white)
-        self.setPen(Qt.black)
+    def key_position(self, idx, string):
 
-    def scaledOutlineMode(self):
-        return self.mode
+        y_idx = idx // 23
+        x_idx = idx % 23
 
-    def setScaledOutlineMode(self, state):
-        self.mode = state
+        #get position for notes
 
-    def outlineThickness(self):
-        return self.w * self.font().pointSize() if self.mode else self.w
+        if string[0] == 'i' and string[1] != 'i':
+            position_x = self.xcoor[x_idx] + self.xcoor[0]
+            position_y = self.ycoor[y_idx] + self.stringcoor[0]
 
-    def setOutlineThickness(self, value):
-        self.w = value
+        elif string[0] == 'i' and string[1] == 'i' and string[2] != 'i':
+            position_x = self.xcoor[x_idx] + self.xcoor[0]
+            position_y = self.ycoor[y_idx] + self.stringcoor[1]
 
-    def setBrush(self, brush):
-        if not isinstance(brush, QBrush):
-            brush = QBrush(brush)
-        self.brush = brush
+        elif string[0] == 'i' and string[1] == 'i' and string[2] == 'i':
+            position_x = self.xcoor[x_idx] + self.xcoor[0]
+            position_y = self.ycoor[y_idx] + self.stringcoor[2]
 
-    def setPen(self, pen):
-        if not isinstance(pen, QPen):
-            pen = QPen(pen)
-        pen.setJoinStyle(Qt.RoundJoin)
-        self.pen = pen
+        elif string[0] == 'i' and string[1] == 'v':
+            position_x = self.xcoor[x_idx] + self.xcoor[0]
+            position_y = self.ycoor[y_idx] + self.stringcoor[3]
 
-    def sizeHint(self):
-        w = math.ceil(self.outlineThickness() * 2)
-        return super().sizeHint() + QSize(w, w)
-    
-    def minimumSizeHint(self):
-        w = math.ceil(self.outlineThickness() * 2)
-        return super().minimumSizeHint() + QSize(w, w)
-    
-    def paintEvent(self, event):
-        w = self.outlineThickness()
-        rect = self.rect()
-        metrics = QFontMetrics(self.font())
-        tr = metrics.boundingRect(self.text()).adjusted(0, 0, w, w)
-        if self.indent() == -1:
-            if self.frameWidth():
-                indent = (metrics.boundingRect('x').width() + w * 2) / 2
-            else:
-                indent = w
+        elif string[0] == 'v' and string[1] != 'i':
+            position_x = self.xcoor[x_idx] + self.xcoor[0]
+            position_y = self.ycoor[y_idx] + self.stringcoor[4]
+
+        elif string[0] == 'v' and string[1] == 'i':
+            position_x = self.xcoor[x_idx] + self.xcoor[0]
+            position_y = self.ycoor[y_idx] + self.stringcoor[5]
+
         else:
-            indent = self.indent()
+            pass
 
-        if self.alignment() & Qt.AlignLeft:
-            x = rect.left() + indent - min(metrics.leftBearing(self.text()[0]), 0)
-        elif self.alignment() & Qt.AlignRight:
-            x = rect.x() + rect.width() - indent - tr.width()
-        else:
-            x = (rect.width() - tr.width()) / 2
-            
-        if self.alignment() & Qt.AlignTop:
-            y = rect.top() + indent + metrics.ascent()
-        elif self.alignment() & Qt.AlignBottom:
-            y = rect.y() + rect.height() - indent - metrics.descent()
-        else:
-            y = (rect.height() + metrics.ascent() - metrics.descent()) / 2
-
-        path = QPainterPath()
-        path.addText(x, y, self.font(), self.text())
-        qp = QPainter(self)
-        qp.setRenderHint(QPainter.Antialiasing)
-
-        self.pen.setWidthF(w * 2)
-        qp.strokePath(path, self.pen)
-        if 1 < self.brush.style() < 15:
-            qp.fillPath(path, self.palette().window())
-        qp.fillPath(path, self.brush)
-
-
-class DrawNote(QWidget):
-    def __init__(self, sheetwindow_pixmap, text, position_x, position_y, state, parent=None):
-        super().__init__()
-
-        self.pixmap = sheetwindow_pixmap
-
-        self.c_background_black = QColor(50, 50, 51)
-        self.c_neutral_grey = QColor(97, 98, 102)
-        self.c_neutral_white = QColor(181, 182, 188)
-        self.c_highlight_pastelgold = QColor(222, 205, 135)
-        self.c_highlight_crimsonred = QColor(180, 75, 67)
-
-        self.text = text
-
-        self.outline_color = self.c_background_black #QColor("black")
-        self.fill_color = self.c_neutral_grey #QColor("red")
-        self.font = QFont("Calibri", 50)
-        self.setGeometry(position_x, position_y, 100, 40) #self.move(position_x, position_y)
-        #self.setAttribute(Qt.WA_TranslucentBackground)
-        # self.show()
-
-    def paintEvent(self, event): #event
-        painter = QPainter(self.pixmap)
-        # painter.setRenderHint(QPainter.Antialiasing)
-        painter.setFont(self.font)
-        
-        # Draw text outline
-        outline_pen = QPen(self.outline_color)
-        outline_pen.setWidth(4)
-        painter.setPen(outline_pen)
-        painter.drawText(self.rect(), Qt.AlignCenter, self.text)
-        
-        # Draw text fill
-        painter.setPen(self.fill_color)
-        painter.drawText(self.rect(), Qt.AlignCenter, self.text)
-
-
-    def update_note(state):
-        pass
-
-
-
-# class DrawNote(QLabel):
-#     def __init__(self, text, position_x, position_y, state, parent=None):
-#         super().__init__(parent)
-
-#         self.c_background_black = QColor(50, 50, 51)
-#         self.c_neutral_grey = QColor(97, 98, 102)
-#         self.c_neutral_white = QColor(181, 182, 188)
-#         self.c_highlight_pastelgold = QColor(222, 205, 135)
-#         self.c_highlight_crimsonred = QColor(180, 75, 67)
-
-#         self.text = text
-        
-#         print('Note was drawn')
-
-#         #note = OutlinedLabel(self.text) #alignemnt=Qt.AlignCenter
-#         painter = QPainter()
-#         painter
-#         note.setStyleSheet(
-#             '''
-#             font-family: Calibri; 
-#             font-size: 15px;
-#             font-weight: light;
-#             '''
-#         )
-#         note.setPen(Qt.red)
-#         self.move(position_x, position_y)
-
-#         # note.setPen(self.c_background_black.name()) #Qt colour
-#         # note.setBrush(self.c_neutral_grey.name()) #Qt colour
+        return (position_x, position_y)
 
 
 #Qapplication instance

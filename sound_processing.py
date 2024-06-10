@@ -450,7 +450,39 @@ vi_string_str = ['vi_E',
             'vi_d']
 
 
+class StandardBounds():
+    def __init__(self):
+        
+        vi_bounds = self.bounds(vi_string)
+        v_bounds = self.bounds(v_string)
+        iv_bounds = self.bounds(iv_string)
+        iii_bounds = self.bounds(iii_string)
+        ii_bounds = self.bounds(ii_string)
+        i_bounds = self.bounds(i_string)
 
+        self.bounds_list = [i_bounds, ii_bounds, iii_bounds, iv_bounds, v_bounds, vi_bounds]
+
+
+    def bounds(self, x_string_conv):
+        # get middle valu between each key on a string
+        x_range_shifted = np.roll(x_string_conv, 1)
+        x_range_mid = (x_string_conv[1:] + x_range_shifted[1:]) / 2
+
+        # get the lowest bound
+        x_bound_0 = 2 * x_string_conv[0] - x_range_mid[0]
+
+        # get the highest bound
+        x_bound_1 = 2 * x_string_conv[-1] - x_range_mid[-1]
+
+        # complete bounds
+        x_bound_floor = np.insert(x_range_mid, 0, x_bound_0)
+        x_bound_ceiling = np.insert(x_range_mid, len(x_range_mid), x_bound_1)
+
+        # generate bounds list
+        bound_list = [[a, b] for a, b in zip(x_bound_floor, x_bound_ceiling)]
+        bound_list = np.array(bound_list)
+
+        return bound_list
 
 class StringPicker():
     def __init__(self):
@@ -561,7 +593,7 @@ class CalibrateGuitar(QThread):
                         rate=RATE,
                         input=True,
                         frames_per_buffer=BUFFER_SIZE,
-                        input_device_index=1)
+                        input_device_index=2)
         
         # Initialize aubio pitch detection
         self.pDetection = aubio.pitch("default", BUFFER_SIZE, BUFFER_SIZE, RATE)
@@ -591,19 +623,6 @@ class CalibrateGuitar(QThread):
         self._running = True
 
     def run(self):
-        # pitch_list = []
-        # while len(pitch_list) <= self.time_buffer:
-        #     # Get audio input
-        #     audio_data = np.frombuffer(self.stream.read(self.buffer_size), dtype=np.float32)
-
-        #     # Detect pitch (note) from audio input
-        #     pitch = self.pDetection(audio_data)[0]
-
-        #     #Make a list
-        #     if pitch is not None and pitch >= self.fq_threshold:
-        #         pitch_list.append(int(pitch))
-        #     print(pitch_list)
-
         self.get_new_bounds()
         self.stream.stop_stream()
         self.stream.close()
@@ -690,7 +709,7 @@ class SoundProcessing(QThread):
                         rate=RATE,
                         input=True,
                         frames_per_buffer=BUFFER_SIZE,
-                        input_device_index=1)
+                        input_device_index=2)
         
         # Initialize aubio pitch detection
         self.pDetection = aubio.pitch("default", BUFFER_SIZE, BUFFER_SIZE, RATE)
@@ -704,64 +723,98 @@ class SoundProcessing(QThread):
         self.good_sample_count = 12
         self.fq_threshold = 60
 
-        # Generate a random key
-        key_array = np.array(key_list)
-        key_list = key_array.flatten()
+        self.mode_list = mode_list
+        self.bound_list = bound_list
+        self.note_list = note_list
 
-        key_str_array = np.array(key_str_list)
-        key_str_list = key_str_array.flatten()
+        self._running = True
 
-        for note in note_list:
+    def run(self):
+        for note in self.note_list:
+            self._running = True
 
-                recorded_key = 1
+            while self._running:
+                recorded = self.record_pitch()
 
-                while recorded_key != note:
-                    # get the current pitch
-                    recorded = self.record_pitch()
+                # test if the current pitch matches a key in each string
+                if 'evi' in self.mode_list:
+                    i_recorded_key = self.fq_to_key(pitch=recorded, string=i_string_str, bounds=self.bound_list[0])
 
-                    # test if the current pitch matches a key in each string
-                    if 'evi' in mode_list:
-                        i_recorded_key = self.fq_to_key(pitch=recorded, string=i_string_str, bounds=bound_list[0])
-                    if 'b' in mode_list:
-                        ii_recorded_key = self.fq_to_key(pitch=recorded, string=ii_string_str, bounds=bound_list[1])
-                    if 'g' in mode_list:
-                        iii_recorded_key = self.fq_to_key(pitch=recorded, string=iii_string_str, bounds=bound_list[2])
-                    if 'd' in mode_list:
-                        iv_recorded_key = self.fq_to_key(pitch=recorded, string=iv_string_str, bounds=bound_list[3])
-                    if 'a' in mode_list:
-                        v_recorded_key = self.fq_to_key(pitch=recorded, string=v_string_str, bounds=bound_list[4])
-                    if 'ei' in mode_list:
-                        vi_recorded_key = self.fq_to_key(pitch=recorded, string=vi_string_str, bounds=bound_list[5])
+                if 'b' in self.mode_list:
+                    ii_recorded_key = self.fq_to_key(pitch=recorded, 
+                                                    string=ii_string_str, 
+                                                    bounds=self.bound_list[1])
+                if 'g' in self.mode_list:
+                    iii_recorded_key = self.fq_to_key(pitch=recorded, 
+                                                    string=iii_string_str, 
+                                                    bounds=self.bound_list[2])
+                if 'd' in self.mode_list:
+                    iv_recorded_key = self.fq_to_key(pitch=recorded,
+                                                    string=iv_string_str, 
+                                                    bounds=self.bound_list[3])
+                if 'a' in self.mode_list:
+                    v_recorded_key = self.fq_to_key(pitch=recorded, 
+                                                    string=v_string_str, 
+                                                    bounds=self.bound_list[4])
+                if 'ei' in self.mode_list:
+                    vi_recorded_key = self.fq_to_key(pitch=recorded, 
+                                                    string=vi_string_str, 
+                                                    bounds=self.bound_list[5])
 
-                    keys = []
+                if note[0] == 'i' and note[1] != 'i':
+                    if i_recorded_key == note:
+                        self.update.emit(True)
+                        self._running = False
+                    else: self.update.emit(False)
 
-                    for string in mode_list:
-                        if string == 'evi':
-                            keys.append(i_recorded_key)
-                        if string == 'b':
-                            keys.append(ii_recorded_key)
-                        if string == 'g':
-                            keys.append(iii_recorded_key)
-                        if string == 'd':
-                            keys.append(iv_recorded_key)
-                        if string == 'a':
-                            keys.append(v_recorded_key)
-                        if string == 'ei':
-                            keys.append(vi_recorded_key)
+                elif note[0] == 'i' and note[1] == 'i' and note[2] != 'i':
+                    if ii_recorded_key == note:
+                        self.update.emit(True)
+                        self._running = False
+                    else: self.update.emit(False)
 
-                    for key in keys:
-                        if key == note:
-                            recorded_key = key
+                elif note[0] == 'i' and note[1] == 'i' and note[2] == 'i':
+                    if iii_recorded_key == note:
+                        self.update.emit(True)
+                        self._running = False
+                    else: self.update.emit(False)
 
-                recorded_key = []
+                elif note[0] == 'i' and note[1] == 'v':
+                    if iv_recorded_key == note:
+                        self.update.emit(True)
+                        self._running = False
+                    else: self.update.emit(False)
+
+                elif note[0] == 'v' and note[1] != 'i':
+                    if v_recorded_key == note:
+                        self.update.emit(True)
+                        self._running = False
+                    else: self.update.emit(False)
+
+                elif note[0] == 'v' and note[1] == 'i':
+                    if vi_recorded_key == note:
+                        self.update.emit(True)
+                        self._running = False
+                    else: self.update.emit(False)
+
+                else:
+                    continue
+
+        self._running = False
 
         self.stream.stop_stream()
         self.stream.close()
         self.p.terminate()
 
-    def fq_to_key(pitch, string, bounds):
+    def stop(self):
+        self._running = False
+        self.wait()
+
+    def fq_to_key(self, pitch, string, bounds):
         floor = bounds[:, 0]
         ceiling = bounds[:, 1]
+
+        print(pitch)
 
         true_array = np.logical_and(floor <= pitch, pitch <= ceiling)
         index = np.where(true_array == True)[0]
