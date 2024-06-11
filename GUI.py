@@ -12,7 +12,7 @@ import time
 import queue
 import random
 
-from sound_processing import StringPicker, CalibrateGuitar, SoundProcessing, StandardBounds
+from sound_processing import StringPicker, CalibrateGuitar, SoundProcessing, StandardBounds, AutoScroll
 
 #Layout the widgets properly
 #Create autoscroll
@@ -55,21 +55,22 @@ class MainWindow(QMainWindow):
         fretboard_image.setFixedSize(fretboard_image_size)
 
         #Sheet zone
-        sheet_zone = QScrollArea()
-        sheet_zone.setWidgetResizable(True)
+        self.sheet_zone = QScrollArea()
+        self.sheet_zone.setWidgetResizable(True)
 
         self.string_check = StringPicker()
 
-        sheet_widget = SheetWindow(width=1500, height=5000, 
+        self.sheet_widget = SheetWindow(width=1500, height=5000, 
                                    key_list=self.string_check.key_list, 
                                    key_str_list=self.string_check.key_str_list, 
                                    mode_list=self.string_check.mode_list,
                                    bound_list=self.bounds_list)
-        sheet_zone.setWidget(sheet_widget)
-        sheet_zone.setFixedSize(QSize(1500, 475))
+        self.sheet_zone.setWidget(self.sheet_widget)
+        self.sheet_zone.setFixedSize(QSize(1500, 475))
 
-        sheet_zone.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff) #scrollArea.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        sheet_zone.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)#scrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.sheet_zone.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff) #scrollArea.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.sheet_zone.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)#scrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        
 
         #Buttons
         button_size = QSize(20, 20)
@@ -122,9 +123,12 @@ class MainWindow(QMainWindow):
         self.ei_button.clicked.connect(self.string_check.click_ei)
 
         self.calibrate_guitar_button.clicked.connect(self.calibrate_guitar)
-        self.start_reset_button.clicked.connect(sheet_widget.start_reset)
-        self.numbers_button.clicked.connect(sheet_widget.number_actuator)
-        self.letters_button.clicked.connect(sheet_widget.letter_actuator)
+
+        self.start_reset_button.clicked.connect(self.sheet_widget.start_reset)
+        self.start_reset_button.clicked.connect(self.auto_scroll)
+
+        self.numbers_button.clicked.connect(self.sheet_widget.number_actuator)
+        self.letters_button.clicked.connect(self.sheet_widget.letter_actuator)
 
         #Layouts
 
@@ -167,7 +171,7 @@ class MainWindow(QMainWindow):
 
         second_layout.addLayout(third_layout)
         second_layout.addLayout(text_button_layout)
-        second_layout.addWidget(sheet_zone)
+        second_layout.addWidget(self.sheet_zone)
         # second_layout.addWidget(self.label)
 
         first_layout.addLayout(second_layout)
@@ -245,6 +249,17 @@ class MainWindow(QMainWindow):
         self.bounds_list.append(result)
         print(result)
         self.loop.quit()
+
+    def auto_scroll(self):
+        self.auto_scroll_thread = AutoScroll(current_idx=self.sheet_widget.note_idx, step_idx=5)
+        self.auto_scroll_thread.update.connect(self.scroll)
+        self.auto_scroll_thread.start()
+
+    def scroll(self, result):
+        print(result)
+        if result:
+            current_value = self.sheet_zone.verticalScrollBar().value()
+            self.sheet_zone.verticalScrollBar().setValue(current_value + 475)
 
 class TextButton(QPushButton):
     def __init__(self, text, parent=None):
@@ -880,7 +895,7 @@ class SheetWindow(QWidget):
             painter.setRenderHint(QPainter.Antialiasing)
             font = QFont("Calibri", 12, weight=500)
             painter.setFont(font)
-            self.text = self.rng_note_list[self.note_idx]
+            self.text = self.text_sorter(self.rng_note_list[self.note_idx])
 
             path = QPainterPath()
             path.addText(int(position[0]), int(position[1]), font, self.text)
@@ -904,7 +919,7 @@ class SheetWindow(QWidget):
             painter.setRenderHint(QPainter.Antialiasing)
             font = QFont("Calibri", 12, weight=500)
             painter.setFont(font)
-            self.text = self.rng_note_list[self.note_idx]
+            self.text = self.text_sorter(self.rng_note_list[self.note_idx])
 
             path = QPainterPath()
             path.addText(int(position[0]), int(position[1]), font, self.text)
@@ -1913,6 +1928,7 @@ class SheetWindow(QWidget):
             output = note
 
         return output
+
 
 #Qapplication instance
 app = QApplication([])

@@ -576,6 +576,26 @@ class StringPicker():
             except:
                 pass
 
+class AutoScroll(QThread):
+    update = Signal(object)
+
+    def __init__(self, current_idx, step_idx):
+        super().__init__()
+
+        self.current_idx = current_idx
+        self.step_idx = step_idx
+        self._running = True
+
+    def run(self):
+        print('Im running')
+        print(self.current_idx)
+        print(self.current_idx % self.step_idx)
+        if self.current_idx % self.step_idx == 0:
+            self.update.emit(True)
+
+        else:
+            self.update.emit(False)
+
 class CalibrateGuitar(QThread):
     finished = Signal(object)
 
