@@ -592,6 +592,7 @@ class AutoScroll(QThread):
         print(self.current_idx % self.step_idx)
         if self.current_idx % self.step_idx == 0:
             self.update.emit(True)
+            print('emited move')
 
         else:
             self.update.emit(False)
@@ -758,28 +759,38 @@ class SoundProcessing(QThread):
 
                 # test if the current pitch matches a key in each string
                 if 'evi' in self.mode_list:
-                    i_recorded_key = self.fq_to_key(pitch=recorded, string=i_string_str, bounds=self.bound_list[0])
+                    i_recorded_key = self.fq_to_key(pitch=recorded, 
+                                                    string=i_string_str, 
+                                                    bounds=self.bound_list[0])
 
                 if 'b' in self.mode_list:
                     ii_recorded_key = self.fq_to_key(pitch=recorded, 
                                                     string=ii_string_str, 
                                                     bounds=self.bound_list[1])
+
                 if 'g' in self.mode_list:
                     iii_recorded_key = self.fq_to_key(pitch=recorded, 
                                                     string=iii_string_str, 
                                                     bounds=self.bound_list[2])
+
+
                 if 'd' in self.mode_list:
                     iv_recorded_key = self.fq_to_key(pitch=recorded,
                                                     string=iv_string_str, 
                                                     bounds=self.bound_list[3])
+
+
                 if 'a' in self.mode_list:
                     v_recorded_key = self.fq_to_key(pitch=recorded, 
                                                     string=v_string_str, 
                                                     bounds=self.bound_list[4])
+
+
                 if 'ei' in self.mode_list:
                     vi_recorded_key = self.fq_to_key(pitch=recorded, 
                                                     string=vi_string_str, 
                                                     bounds=self.bound_list[5])
+
 
                 if note[0] == 'i' and note[1] != 'i':
                     if i_recorded_key == note:

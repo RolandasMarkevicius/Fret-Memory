@@ -256,7 +256,8 @@ class MainWindow(QMainWindow):
         self.auto_scroll_thread.start()
 
     def scroll(self, result):
-        print(result)
+        print(f'scroll {result}')
+
         if result:
             current_value = self.sheet_zone.verticalScrollBar().value()
             self.sheet_zone.verticalScrollBar().setValue(current_value + 475)
@@ -885,10 +886,10 @@ class SheetWindow(QWidget):
 
     def recording_result(self, result):
         self.current_key = result
-        print(result)
+        # print(result)
 
         if result == True:
-            print(self.note_idx)
+            # print(self.note_idx)
             position = self.key_position(idx=self.note_idx, string=self.rng_note_list[self.note_idx])
 
             painter = QPainter(self.pixmap)
@@ -912,7 +913,7 @@ class SheetWindow(QWidget):
             print(self.note_idx)
 
         if result == False:
-            print(self.note_idx)
+            # print(self.note_idx)
             position = self.key_position(idx=self.note_idx, string=self.rng_note_list[self.note_idx])
 
             painter = QPainter(self.pixmap)
@@ -1451,451 +1452,451 @@ class SheetWindow(QWidget):
             if note[0] == 'i' and note[1] != 'i':
                 index = 2
 
-                if note[index] == 'E':
+                if note[index] == 'E' and len(note) == 3:
                     output = f'0'
 
-                if note[index] == 'F':
+                if note[index] == 'F' and len(note) == 3:
                     output = f'1'
 
-                if note[index] == 'F#':
+                if note[index] == 'F' and len(note) == 4:
                     output = f'2'
 
-                if note[index] == 'G':
+                if note[index] == 'G' and len(note) == 3:
                     output = f'3'
 
-                if note[index] == 'G#':
+                if note[index] == 'G' and len(note) == 4:
                     output = f'4'
 
-                if note[index] == 'A':
+                if note[index] == 'A' and len(note) == 3:
                     output = f'5'
 
-                if note[index] == 'A#':
+                if note[index] == 'A' and len(note) == 4:
                     output = f'6'
 
-                if note[index] == 'B':
+                if note[index] == 'B' and len(note) == 3:
                     output = f'7'
 
-                if note[index] == 'C':
+                if note[index] == 'C' and len(note) == 3:
                     output = f'8'
 
-                if note[index] == 'C#':
+                if note[index] == 'C' and len(note) == 4:
                     output = f'9'
 
-                if note[index] == 'D':
+                if note[index] == 'D' and len(note) == 3:
                     output = f'10'
 
-                if note[index] == 'D#':
+                if note[index] == 'D' and len(note) == 4:
                     output = f'11'
 
-                if note[index] == 'e':
+                if note[index] == 'e' and len(note) == 3:
                     output = f'12'
 
-                if note[index] == 'f':
+                if note[index] == 'f' and len(note) == 3:
                     output = f'13'
 
-                if note[index] == 'f#':
+                if note[index] == 'f' and len(note) == 4:
                     output = f'14'
 
-                if note[index] == 'g':
+                if note[index] == 'g' and len(note) == 3:
                     output = f'15'
 
-                if note[index] == 'g#':
+                if note[index] == 'g' and len(note) == 4:
                     output = f'16'
 
-                if note[index] == 'a':
+                if note[index] == 'a' and len(note) == 3:
                     output = f'17'
 
-                if note[index] == 'a#':
+                if note[index] == 'a' and len(note) == 4:
                     output = f'18'
 
-                if note[index] == 'b':
+                if note[index] == 'b' and len(note) == 3:
                     output = f'19'
 
-                if note[index] == 'c':
+                if note[index] == 'c' and len(note) == 3:
                     output = f'20'
 
-                if note[index] == 'c#':
+                if note[index] == 'c' and len(note) == 4:
                     output = f'21'
 
-                if note[index] == 'd':
+                if note[index] == 'd' and len(note) == 3:
                     output = f'22'
                 
-                if note[index] == 'd#':
+                if note[index] == 'd' and len(note) == 4:
                     output = f'23'
 
             elif note[0] == 'i' and note[1] == 'i' and note[2] != 'i':
                 index = 3
 
-                if note[index] == 'B':
+                if note[index] == 'B' and len(note) == 3:
                     output = f'0'
 
-                if note[index] == 'C':
+                if note[index] == 'C' and len(note) == 3:
                     output = f'1'
 
-                if note[index] == 'C#':
+                if note[index] == 'C' and len(note) == 4:
                     output = f'2'
 
-                if note[index] == 'D':
+                if note[index] == 'D' and len(note) == 3:
                     output = f'3'
 
-                if note[index] == 'D#':
+                if note[index] == 'D' and len(note) == 4:
                     output = f'4'
 
-                if note[index] == 'E':
+                if note[index] == 'E' and len(note) == 3:
                     output = f'5'
 
-                if note[index] == 'F':
+                if note[index] == 'F' and len(note) == 3:
                     output = f'6'
 
-                if note[index] == 'F#':
+                if note[index] == 'F' and len(note) == 4:
                     output = f'7'
 
-                if note[index] == 'G':
+                if note[index] == 'G' and len(note) == 3:
                     output = f'8'
 
-                if note[index] == 'G#':
+                if note[index] == 'G' and len(note) == 4:
                     output = f'9'
 
-                if note[index] == 'A':
+                if note[index] == 'A' and len(note) == 3:
                     output = f'10'
 
-                if note[index] == 'A#':
+                if note[index] == 'A' and len(note) == 4:
                     output = f'11'
 
-                if note[index] == 'b':
+                if note[index] == 'b' and len(note) == 3:
                     output = f'12'
 
-                if note[index] == 'c':
+                if note[index] == 'c' and len(note) == 3:
                     output = f'13'
 
-                if note[index] == 'c#':
+                if note[index] == 'c' and len(note) == 4:
                     output = f'14'
 
-                if note[index] == 'd':
+                if note[index] == 'd' and len(note) == 3:
                     output = f'15'
                 
-                if note[index] == 'd#':
+                if note[index] == 'd' and len(note) == 4:
                     output = f'16'
 
-                if note[index] == 'e':
+                if note[index] == 'e' and len(note) == 3:
                     output = f'17'
 
-                if note[index] == 'f':
+                if note[index] == 'f' and len(note) == 3:
                     output = f'18'
 
-                if note[index] == 'f#':
+                if note[index] == 'f' and len(note) == 4:
                     output = f'19'
 
-                if note[index] == 'g':
+                if note[index] == 'g' and len(note) == 3:
                     output = f'20'
 
-                if note[index] == 'g#':
+                if note[index] == 'g' and len(note) == 4:
                     output = f'21'
 
-                if note[index] == 'a':
+                if note[index] == 'a' and len(note) == 3:
                     output = f'22'
 
-                if note[index] == 'a#':
+                if note[index] == 'a' and len(note) == 4:
                     output = f'23'
 
             elif note[0] == 'i' and note[1] == 'i' and note[2] == 'i':
                 index = 4
 
-                if note[index] == 'G':
+                if note[index] == 'G' and len(note) == 3:
                     output = f'0'
 
-                if note[index] == 'G#':
+                if note[index] == 'G' and len(note) == 4:
                     output = f'1'
 
-                if note[index] == 'A':
+                if note[index] == 'A' and len(note) == 3:
                     output = f'2'
 
-                if note[index] == 'A#':
+                if note[index] == 'A' and len(note) == 4:
                     output = f'3'
 
-                if note[index] == 'B':
+                if note[index] == 'B' and len(note) == 3:
                     output = f'4'
 
-                if note[index] == 'C':
+                if note[index] == 'C' and len(note) == 3:
                     output = f'5'
 
-                if note[index] == 'C#':
+                if note[index] == 'C' and len(note) == 4:
                     output = f'6'
 
-                if note[index] == 'D':
+                if note[index] == 'D' and len(note) == 3:
                     output = f'7'
 
-                if note[index] == 'D#':
+                if note[index] == 'D' and len(note) == 4:
                     output = f'8'
 
-                if note[index] == 'E':
+                if note[index] == 'E' and len(note) == 3:
                     output = f'9'
 
-                if note[index] == 'F':
+                if note[index] == 'F' and len(note) == 3:
                     output = f'10'
 
-                if note[index] == 'F#':
+                if note[index] == 'F' and len(note) == 4:
                     output = f'11'
 
-                if note[index] == 'g':
+                if note[index] == 'g' and len(note) == 3:
                     output = f'12'
 
-                if note[index] == 'g#':
+                if note[index] == 'g' and len(note) == 4:
                     output = f'13'
 
-                if note[index] == 'a':
+                if note[index] == 'a' and len(note) == 3:
                     output = f'14'
 
-                if note[index] == 'a#':
+                if note[index] == 'a' and len(note) == 4:
                     output = f'15'
 
-                if note[index] == 'b':
+                if note[index] == 'b' and len(note) == 3:
                     output = f'16'
 
-                if note[index] == 'c':
+                if note[index] == 'c' and len(note) == 3:
                     output = f'17'
 
-                if note[index] == 'c#':
+                if note[index] == 'c' and len(note) == 4:
                     output = f'18'
 
-                if note[index] == 'd':
+                if note[index] == 'd' and len(note) == 3:
                     output = f'19'
                 
-                if note[index] == 'd#':
+                if note[index] == 'd' and len(note) == 4:
                     output = f'20'
 
-                if note[index] == 'e':
+                if note[index] == 'e' and len(note) == 3:
                     output = f'21'
 
-                if note[index] == 'f':
+                if note[index] == 'f' and len(note) == 3:
                     output = f'22'
 
-                if note[index] == 'f#':
+                if note[index] == 'f' and len(note) == 4:
                     output = f'23'
 
             elif note[0] == 'i' and note[1] == 'v':
                 index = 3
 
-                if note[index] == 'D':
+                if note[index] == 'D' and len(note) == 3:
                     output = f'0'
 
-                if note[index] == 'D#':
+                if note[index] == 'D' and len(note) == 4:
                     output = f'1'
 
-                if note[index] == 'E':
+                if note[index] == 'E' and len(note) == 3:
                     output = f'2'
 
-                if note[index] == 'F':
+                if note[index] == 'F' and len(note) == 3:
                     output = f'3'
 
-                if note[index] == 'F#':
+                if note[index] == 'F' and len(note) == 4:
                     output = f'4'
 
-                if note[index] == 'G':
+                if note[index] == 'G' and len(note) == 3:
                     output = f'5'
 
-                if note[index] == 'G#':
+                if note[index] == 'G' and len(note) == 4:
                     output = f'6'
 
-                if note[index] == 'A':
+                if note[index] == 'A' and len(note) == 3:
                     output = f'7'
 
-                if note[index] == 'A#':
+                if note[index] == 'A' and len(note) == 4:
                     output = f'8'
 
-                if note[index] == 'B':
+                if note[index] == 'B' and len(note) == 3:
                     output = f'9'
 
-                if note[index] == 'C':
+                if note[index] == 'C' and len(note) == 3:
                     output = f'10'
 
-                if note[index] == 'C#':
+                if note[index] == 'C' and len(note) == 4:
                     output = f'11'
 
-                if note[index] == 'd':
+                if note[index] == 'd' and len(note) == 3:
                     output = f'12'
                 
-                if note[index] == 'd#':
+                if note[index] == 'd' and len(note) == 4:
                     output = f'13'
 
-                if note[index] == 'e':
+                if note[index] == 'e' and len(note) == 3:
                     output = f'14'
 
-                if note[index] == 'f':
+                if note[index] == 'f' and len(note) == 3:
                     output = f'15'
 
-                if note[index] == 'f#':
+                if note[index] == 'f' and len(note) == 4:
                     output = f'16'
 
-                if note[index] == 'g':
+                if note[index] == 'g' and len(note) == 3:
                     output = f'17'
 
-                if note[index] == 'g#':
+                if note[index] == 'g' and len(note) == 4:
                     output = f'18'
 
-                if note[index] == 'a':
+                if note[index] == 'a' and len(note) == 3:
                     output = f'19'
 
-                if note[index] == 'a#':
+                if note[index] == 'a' and len(note) == 4:
                     output = f'20'
 
-                if note[index] == 'b':
+                if note[index] == 'b' and len(note) == 3:
                     output = f'21'
 
-                if note[index] == 'c':
+                if note[index] == 'c' and len(note) == 3:
                     output = f'22'
 
-                if note[index] == 'c#':
+                if note[index] == 'c' and len(note) == 4:
                     output = f'23'
 
             elif note[0] == 'v' and note[1] != 'i':
                 index = 2
 
-                if note[index] == 'A':
+                if note[index] == 'A' and len(note) == 3:
                     output = f'0'
 
-                if note[index] == 'A#':
+                if note[index] == 'A' and len(note) == 4:
                     output = f'1'
 
-                if note[index] == 'B':
+                if note[index] == 'B' and len(note) == 3:
                     output = f'2'
 
-                if note[index] == 'C':
+                if note[index] == 'C' and len(note) == 3:
                     output = f'3'
 
-                if note[index] == 'C#':
+                if note[index] == 'C' and len(note) == 4:
                     output = f'4'
 
-                if note[index] == 'D':
+                if note[index] == 'D' and len(note) == 3:
                     output = f'5'
 
-                if note[index] == 'D#':
+                if note[index] == 'D' and len(note) == 4:
                     output = f'6'
 
-                if note[index] == 'E':
+                if note[index] == 'E' and len(note) == 3:
                     output = f'7'
 
-                if note[index] == 'F':
+                if note[index] == 'F' and len(note) == 3:
                     output = f'8'
 
-                if note[index] == 'F#':
+                if note[index] == 'F' and len(note) == 4:
                     output = f'9'
 
-                if note[index] == 'G':
+                if note[index] == 'G' and len(note) == 3:
                     output = f'10'
 
-                if note[index] == 'G#':
+                if note[index] == 'G' and len(note) == 4:
                     output = f'11'
 
-                if note[index] == 'a':
+                if note[index] == 'a' and len(note) == 3:
                     output = f'12'
 
-                if note[index] == 'a#':
+                if note[index] == 'a' and len(note) == 4:
                     output = f'13'
 
-                if note[index] == 'b':
+                if note[index] == 'b' and len(note) == 3:
                     output = f'14'
 
-                if note[index] == 'c':
+                if note[index] == 'c' and len(note) == 3:
                     output = f'15'
 
-                if note[index] == 'c#':
+                if note[index] == 'c' and len(note) == 4:
                     output = f'16'
 
-                if note[index] == 'd':
+                if note[index] == 'd' and len(note) == 3:
                     output = f'17'
                 
-                if note[index] == 'd#':
+                if note[index] == 'd' and len(note) == 4:
                     output = f'18'
 
-                if note[index] == 'e':
+                if note[index] == 'e' and len(note) == 3:
                     output = f'19'
 
-                if note[index] == 'f':
+                if note[index] == 'f' and len(note) == 3:
                     output = f'20'
 
-                if note[index] == 'f#':
+                if note[index] == 'f' and len(note) == 4:
                     output = f'21'
 
-                if note[index] == 'g':
+                if note[index] == 'g' and len(note) == 3:
                     output = f'22'
 
-                if note[index] == 'g#':
+                if note[index] == 'g' and len(note) == 4:
                     output = f'23'
 
             elif note[0] == 'v' and note[1] == 'i':
                 index = 3
 
-                if note[index] == 'E':
+                if note[index] == 'E' and len(note) == 3:
                     output = f'0'
 
-                if note[index] == 'F':
+                if note[index] == 'F' and len(note) == 3:
                     output = f'1'
 
-                if note[index] == 'F#':
+                if note[index] == 'F' and len(note) == 4:
                     output = f'2'
 
-                if note[index] == 'G':
+                if note[index] == 'G' and len(note) == 3:
                     output = f'3'
 
-                if note[index] == 'G#':
+                if note[index] == 'G' and len(note) == 4:
                     output = f'4'
 
-                if note[index] == 'A':
+                if note[index] == 'A' and len(note) == 3:
                     output = f'5'
 
-                if note[index] == 'A#':
+                if note[index] == 'A' and len(note) == 4:
                     output = f'6'
 
-                if note[index] == 'B':
+                if note[index] == 'B' and len(note) == 3:
                     output = f'7'
 
-                if note[index] == 'C':
+                if note[index] == 'C' and len(note) == 3:
                     output = f'8'
 
-                if note[index] == 'C#':
+                if note[index] == 'C' and len(note) == 4:
                     output = f'9'
 
-                if note[index] == 'D':
+                if note[index] == 'D' and len(note) == 3:
                     output = f'10'
 
-                if note[index] == 'D#':
+                if note[index] == 'D' and len(note) == 4:
                     output = f'11'
 
-                if note[index] == 'e':
+                if note[index] == 'e' and len(note) == 3:
                     output = f'12'
 
-                if note[index] == 'f':
+                if note[index] == 'f' and len(note) == 3:
                     output = f'13'
 
-                if note[index] == 'f#':
+                if note[index] == 'f' and len(note) == 4:
                     output = f'14'
 
-                if note[index] == 'g':
+                if note[index] == 'g' and len(note) == 3:
                     output = f'15'
 
-                if note[index] == 'g#':
+                if note[index] == 'g' and len(note) == 4:
                     output = f'16'
 
-                if note[index] == 'a':
+                if note[index] == 'a' and len(note) == 3:
                     output = f'17'
 
-                if note[index] == 'a#':
+                if note[index] == 'a' and len(note) == 4:
                     output = f'18'
 
-                if note[index] == 'b':
+                if note[index] == 'b' and len(note) == 3:
                     output = f'19'
 
-                if note[index] == 'c':
+                if note[index] == 'c' and len(note) == 3:
                     output = f'20'
 
-                if note[index] == 'c#':
+                if note[index] == 'c' and len(note) == 4:
                     output = f'21'
 
-                if note[index] == 'd':
+                if note[index] == 'd' and len(note) == 3:
                     output = f'22'
                 
-                if note[index] == 'd#':
+                if note[index] == 'd' and len(note) == 4:
                     output = f'23'
 
         if self.number_state == False and self.text_state == True:
