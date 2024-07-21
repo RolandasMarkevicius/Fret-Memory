@@ -259,8 +259,22 @@ class MainWindow(QMainWindow):
         print(f'scroll {result}')
 
         if result:
-            current_value = self.sheet_zone.verticalScrollBar().value()
-            self.sheet_zone.verticalScrollBar().setValue(current_value + 475)
+            # current_value = self.sheet_zone.verticalScrollBar().value()
+            # self.sheet_zone.verticalScrollBar().setValue(current_value + 475)
+            scroll_bar = self.sheet_zone.verticalScrollBar()
+            scroll_bar_start_value = scroll_bar.value()
+            scroll_bar_end_value = scroll_bar.value() + 455
+
+            # QVariantAnimation(self)
+            
+
+            self.sb_animation = QPropertyAnimation(scroll_bar, b"value")
+            self.sb_animation.setEasingCurve(QEasingCurve.InOutCubic)
+
+            self.sb_animation.setDuration(500)  # duration in milliseconds
+            self.sb_animation.setStartValue(scroll_bar_start_value)
+            self.sb_animation.setEndValue(scroll_bar_end_value)
+            self.sb_animation.start()
 
 class TextButton(QPushButton):
     def __init__(self, text, parent=None):
