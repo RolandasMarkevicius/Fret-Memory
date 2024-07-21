@@ -5,7 +5,7 @@ import random
 import statistics
 import numpy as np
 import queue
-from PySide6.QtCore import QThread, Signal, QEventLoop
+from PySide6.QtCore import QThread, Signal, QEventLoop, Slot
 
 # pitch table
 
@@ -578,24 +578,26 @@ class StringPicker():
 
 class AutoScroll(QThread):
     update = Signal(object)
+    idx_signal = Signal(int)
 
-    def __init__(self, current_idx, step_idx):
+    def __init__(self, step_idx):
         super().__init__()
 
-        self.current_idx = current_idx
         self.step_idx = step_idx
-        self._running = True
+        self.note_idx = 0
+        self.idx_signal.connect(self.run)
 
-    def run(self):
-        print('Im running')
-        print(self.current_idx)
-        print(self.current_idx % self.step_idx)
-        if self.current_idx % self.step_idx == 0:
+    # @Slot(int)
+    def run(self, note_idx):
+        self.note_idx = note_idx
+
+        if int(float(self.note_idx) % float(self.step_idx)) == 0 and self.note_idx != 0:
             self.update.emit(True)
-            print('emited move')
 
-        else:
-            self.update.emit(False)
+            print(f'% is {int(float(self.note_idx) % float(self.step_idx))}')
+            print(f'Current index is: {self.note_idx}')
+            print(f'Step index is: {self.step_idx}')
+            print('Autoscroll move emited')
 
 class CalibrateGuitar(QThread):
     finished = Signal(object)
