@@ -12,7 +12,7 @@ import time
 import queue
 import random
 
-from sound_processing import StringPicker, CalibrateGuitar, SoundProcessing, StandardBounds, AutoScroll
+from sound_processing import StringPicker, CalibrateGuitar, SoundProcessing, StandardBounds
 
 #Layout the widgets properly
 #Create autoscroll
@@ -68,6 +68,7 @@ class MainWindow(QMainWindow):
         
         # self.sheet_widget.auto_scroll.scroll_signal.connect(self.scroll)
         self.sheet_widget.auto_scroll_signal.connect(self.scroll)
+        self.sheet_widget.reset_scroll_signal.connect(self.reset_scroll)
 
         self.sheet_zone.setWidget(self.sheet_widget)
         self.sheet_zone.setFixedSize(QSize(1500, 475))
@@ -267,6 +268,21 @@ class MainWindow(QMainWindow):
 
             # QVariantAnimation(self)
             
+
+            self.sb_animation = QPropertyAnimation(scroll_bar, b"value")
+            self.sb_animation.setEasingCurve(QEasingCurve.InOutCubic)
+
+            self.sb_animation.setDuration(500)  # duration in milliseconds
+            self.sb_animation.setStartValue(scroll_bar_start_value)
+            self.sb_animation.setEndValue(scroll_bar_end_value)
+            self.sb_animation.start()
+
+    @Slot()
+    def reset_scroll(self, result):
+        if result:
+            scroll_bar = self.sheet_zone.verticalScrollBar()
+            scroll_bar_start_value = scroll_bar.value()
+            scroll_bar_end_value = 0         
 
             self.sb_animation = QPropertyAnimation(scroll_bar, b"value")
             self.sb_animation.setEasingCurve(QEasingCurve.InOutCubic)
@@ -791,6 +807,7 @@ class SheetWindow(QWidget):
 
     send_idx_signal = Signal(int)
     auto_scroll_signal = Signal(object)
+    reset_scroll_signal = Signal(object)
 
     def __init__(self, width, height, key_list, key_str_list, mode_list, bound_list, parent=None):
         super().__init__(parent)
@@ -812,12 +829,13 @@ class SheetWindow(QWidget):
         self.sheet_width = width
         self.current_pitch = 0
         self.note_idx = 0
+        self.step_idx = 69
 
         self.text_state = False
         self.number_state = False
-
+        self.start_state = False
         self.initsheetlines()
-
+        
     def initsheetlines(self):
 
         self.pixmap = QPixmap(self.sheet_width, self.sheet_height)
@@ -847,22 +865,28 @@ class SheetWindow(QWidget):
         painter_2.end()
 
     def start_reset(self):
-        self.generate_notes()
-        # print(f'text state {self.text_state}')
-        # print(f'number state {self.number_state}')
-        self.start_recording()
-        self.auto_scroll()
+        print(self.start_state)
 
-    def auto_scroll(self):
-        self.auto_scroll_thread = AutoScroll(step_idx=2)
-        self.auto_scroll_thread.update.connect(self.signal_mainwindow)
-        self.auto_scroll_thread.start()
-        # self.send_idx_signal.connect(self.auto_scroll_thread.idx_signal)
+        if self.start_state:
+            #clear the window
+            self.initsheetlines()
 
-    def signal_mainwindow(self, result):
-        if result:
-            self.auto_scroll_signal.emit(True)
-        
+            #reset the index
+            self.note_idx = 0
+            self.current_pitch = 0
+
+            self.reset_scroll_signal.emit(True)
+
+            self.recording_thread.stop()
+
+            self.generate_notes()
+            # self.start_recording()
+
+
+        else:
+            self.start_state = True
+            self.generate_notes()
+            self.start_recording()
 
     def generate_notes(self): #generate and draw the notes
         #key values
@@ -916,7 +940,6 @@ class SheetWindow(QWidget):
 
     def recording_result(self, result):
         self.current_key = result
-        # print(result)
 
         if result == True:
             # print(self.note_idx)
@@ -940,9 +963,8 @@ class SheetWindow(QWidget):
             painter.end()
 
             self.note_idx += 1
-            self.send_idx_signal.emit(self.note_idx)
-            self.send_idx_signal.connect(self.auto_scroll_thread.idx_signal)
-            # print(self.note_idx)
+            if int(float(self.note_idx) % float(self.step_idx)) == 0 and self.note_idx != 0:
+                self.auto_scroll_signal.emit(True)
 
         if result == False:
             # print(self.note_idx)
