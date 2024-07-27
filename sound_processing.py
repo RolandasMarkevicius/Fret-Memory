@@ -698,7 +698,7 @@ class SoundProcessing(QThread):
     update = Signal(object)
     note = Signal(str)
 
-    def __init__(self, mode_list, bound_list, note_list):
+    def __init__(self, mode_list, bound_list, note_list): #note_list
         super().__init__()
         BUFFER_SIZE = 2048
         self.buffer_size = BUFFER_SIZE
@@ -730,206 +730,117 @@ class SoundProcessing(QThread):
         self.bound_list = bound_list
         self.note_list = note_list
 
-        # self._running = True
+
+        # self.note.connect(self.run)
+
+        self._running = True
+        print('sound processing tread initiated')
 
     def run(self):
-            
-            self._running = True
+        for i in self.note_list:
+            print('initiating while loop')
 
-    def while_loop(self, note):
-        
-        while self._running:
-            print(self._running)
-            
-            recorded = self.record_pitch()
+            if self._running == False:
+                print('for loop broken')
+                break
 
-            # test if the current pitch matches a key in each string
-            if 'evi' in self.mode_list:
-                i_recorded_key = self.fq_to_key(pitch=recorded, 
-                                                string=i_string_str, 
-                                                bounds=self.bound_list[0])
+            # self._running = True
 
-            if 'b' in self.mode_list:
-                ii_recorded_key = self.fq_to_key(pitch=recorded, 
-                                                string=ii_string_str, 
-                                                bounds=self.bound_list[1])
+            while self._running:
+                self.loop_state = True
+                # print('while loop is running')
+                self.process(note=i)
 
-            if 'g' in self.mode_list:
-                iii_recorded_key = self.fq_to_key(pitch=recorded, 
-                                                string=iii_string_str, 
-                                                bounds=self.bound_list[2])
+                if self.loop_state == False:
 
+                    break
 
-            if 'd' in self.mode_list:
-                iv_recorded_key = self.fq_to_key(pitch=recorded,
-                                                string=iv_string_str, 
-                                                bounds=self.bound_list[3])
+    def process(self, note):
+           
+        recorded = self.record_pitch()
 
-
-            if 'a' in self.mode_list:
-                v_recorded_key = self.fq_to_key(pitch=recorded, 
-                                                string=v_string_str, 
-                                                bounds=self.bound_list[4])
-
-
-            if 'ei' in self.mode_list:
-                vi_recorded_key = self.fq_to_key(pitch=recorded, 
-                                                string=vi_string_str, 
-                                                bounds=self.bound_list[5])
-
-
-            if note[0] == 'i' and note[1] != 'i':
-                if i_recorded_key == note:
-                    self.update.emit(True)
-                    self._running = False
-                else: self.update.emit(False)
-
-            elif note[0] == 'i' and note[1] == 'i' and note[2] != 'i':
-                if ii_recorded_key == note:
-                    self.update.emit(True)
-                    self._running = False
-                else: self.update.emit(False)
-
-            elif note[0] == 'i' and note[1] == 'i' and note[2] == 'i':
-                if iii_recorded_key == note:
-                    self.update.emit(True)
-                    self._running = False
-                else: self.update.emit(False)
-
-            elif note[0] == 'i' and note[1] == 'v':
-                if iv_recorded_key == note:
-                    self.update.emit(True)
-                    self._running = False
-                else: self.update.emit(False)
-
-            elif note[0] == 'v' and note[1] != 'i':
-                if v_recorded_key == note:
-                    self.update.emit(True)
-                    self._running = False
-                else: self.update.emit(False)
-
-            elif note[0] == 'v' and note[1] == 'i':
-                if vi_recorded_key == note:
-                    self.update.emit(True)
-                    self._running = False
-                else: self.update.emit(False)
-
-                # else:
-                #     continue
-            # else:
-            #     print('this worked')
-            #     pass
-
-            self._running = False
-
+        if self._running == False:
             self.stream.stop_stream()
             self.stream.close()
             self.p.terminate()
+            print('thread terminated')
+            return
 
-            print('thread terminated successfully')
-    # def run(self):
-    #     for note in self.note_list:
-    #         print('runnning')
-    #         self._running = True
+        # test if the current pitch matches a key in each string
+        if 'evi' in self.mode_list:
+            i_recorded_key = self.fq_to_key(pitch=recorded, 
+                                            string=i_string_str, 
+                                            bounds=self.bound_list[0])
 
-    #         while self._running:
-    #             print(self._running)
-    #             recorded = self.record_pitch()
+        if 'b' in self.mode_list:
+            ii_recorded_key = self.fq_to_key(pitch=recorded, 
+                                            string=ii_string_str, 
+                                            bounds=self.bound_list[1])
 
-    #             # test if the current pitch matches a key in each string
-    #             if 'evi' in self.mode_list:
-    #                 i_recorded_key = self.fq_to_key(pitch=recorded, 
-    #                                                 string=i_string_str, 
-    #                                                 bounds=self.bound_list[0])
-
-    #             if 'b' in self.mode_list:
-    #                 ii_recorded_key = self.fq_to_key(pitch=recorded, 
-    #                                                 string=ii_string_str, 
-    #                                                 bounds=self.bound_list[1])
-
-    #             if 'g' in self.mode_list:
-    #                 iii_recorded_key = self.fq_to_key(pitch=recorded, 
-    #                                                 string=iii_string_str, 
-    #                                                 bounds=self.bound_list[2])
+        if 'g' in self.mode_list:
+            iii_recorded_key = self.fq_to_key(pitch=recorded, 
+                                            string=iii_string_str, 
+                                            bounds=self.bound_list[2])
 
 
-    #             if 'd' in self.mode_list:
-    #                 iv_recorded_key = self.fq_to_key(pitch=recorded,
-    #                                                 string=iv_string_str, 
-    #                                                 bounds=self.bound_list[3])
+        if 'd' in self.mode_list:
+            iv_recorded_key = self.fq_to_key(pitch=recorded,
+                                            string=iv_string_str, 
+                                            bounds=self.bound_list[3])
 
 
-    #             if 'a' in self.mode_list:
-    #                 v_recorded_key = self.fq_to_key(pitch=recorded, 
-    #                                                 string=v_string_str, 
-    #                                                 bounds=self.bound_list[4])
+        if 'a' in self.mode_list:
+            v_recorded_key = self.fq_to_key(pitch=recorded, 
+                                            string=v_string_str, 
+                                            bounds=self.bound_list[4])
 
 
-    #             if 'ei' in self.mode_list:
-    #                 vi_recorded_key = self.fq_to_key(pitch=recorded, 
-    #                                                 string=vi_string_str, 
-    #                                                 bounds=self.bound_list[5])
+        if 'ei' in self.mode_list:
+            vi_recorded_key = self.fq_to_key(pitch=recorded, 
+                                            string=vi_string_str, 
+                                            bounds=self.bound_list[5])
 
 
-    #             if note[0] == 'i' and note[1] != 'i':
-    #                 if i_recorded_key == note:
-    #                     self.update.emit(True)
-    #                     self._running = False
-    #                 else: self.update.emit(False)
+        if note[0] == 'i' and note[1] != 'i':
+            if i_recorded_key == note:
+                self.update.emit(True)
+                self.loop_state = False #self._running = False
+            else: self.update.emit(False)
 
-    #             elif note[0] == 'i' and note[1] == 'i' and note[2] != 'i':
-    #                 if ii_recorded_key == note:
-    #                     self.update.emit(True)
-    #                     self._running = False
-    #                 else: self.update.emit(False)
+        elif note[0] == 'i' and note[1] == 'i' and note[2] != 'i':
+            if ii_recorded_key == note:
+                self.update.emit(True)
+                self.loop_state = False #self._running = False
+            else: self.update.emit(False)
 
-    #             elif note[0] == 'i' and note[1] == 'i' and note[2] == 'i':
-    #                 if iii_recorded_key == note:
-    #                     self.update.emit(True)
-    #                     self._running = False
-    #                 else: self.update.emit(False)
+        elif note[0] == 'i' and note[1] == 'i' and note[2] == 'i':
+            if iii_recorded_key == note:
+                self.update.emit(True)
+                self.loop_state = False #self._running = False
+            else: self.update.emit(False)
 
-    #             elif note[0] == 'i' and note[1] == 'v':
-    #                 if iv_recorded_key == note:
-    #                     self.update.emit(True)
-    #                     self._running = False
-    #                 else: self.update.emit(False)
+        elif note[0] == 'i' and note[1] == 'v':
+            if iv_recorded_key == note:
+                self.update.emit(True)
+                self.loop_state = False #self._running = False
+            else: self.update.emit(False)
 
-    #             elif note[0] == 'v' and note[1] != 'i':
-    #                 if v_recorded_key == note:
-    #                     self.update.emit(True)
-    #                     self._running = False
-    #                 else: self.update.emit(False)
+        elif note[0] == 'v' and note[1] != 'i':
+            if v_recorded_key == note:
+                self.update.emit(True)
+                self.loop_state = False #self._running = False
+            else: self.update.emit(False)
 
-    #             elif note[0] == 'v' and note[1] == 'i':
-    #                 if vi_recorded_key == note:
-    #                     self.update.emit(True)
-    #                     self._running = False
-    #                 else: self.update.emit(False)
+        elif note[0] == 'v' and note[1] == 'i':
+            if vi_recorded_key == note:
+                self.update.emit(True)
+                self.loop_state = False #self._running = False
+            else: self.update.emit(False)
 
-    #             # else:
-    #             #     continue
-    #         # else:
-    #         #     print('this worked')
-    #         #     pass
-
-    #     self._running = False
-
-    #     self.stream.stop_stream()
-    #     self.stream.close()
-    #     self.p.terminate()
-
-    #     print('thread terminated successfully')
 
     def stop(self):
-        print('sent signal to stop')
         self._running = False
-
-        # self.stream.stop_stream()
-        # self.stream.close()
-        # self.p.terminate()
-
-        print('thread terminated successfully')
+        print('sent signal to stop')
 
     def fq_to_key(self, pitch, string, bounds):
         floor = bounds[:, 0]
@@ -951,16 +862,26 @@ class SoundProcessing(QThread):
         pitch_list = []
 
         while len(pitch_list) <= self.time_buffer:
-            # Get audio input
-            audio_data = np.frombuffer(self.stream.read(self.buffer_size), dtype=np.float32)
 
-            # Detect pitch (note) from audio input
-            pitch = self.pDetection(audio_data)[0]
+            if self._running == False:
+                print('record pitch broken')
+                break
 
-            #Make a list
-            if pitch is not None and pitch >= self.fq_threshold:
-                pitch_list.append(int(pitch))
+            else:
+                # Get audio input
+                audio_data = np.frombuffer(self.stream.read(self.buffer_size), dtype=np.float32)
 
-        pitch_buffer_mode = statistics.mode(pitch_list)
+                # Detect pitch (note) from audio input
+                pitch = self.pDetection(audio_data)[0]
 
-        return pitch_buffer_mode
+                #Make a list
+                if pitch is not None and pitch >= self.fq_threshold:
+                    pitch_list.append(int(pitch))
+
+        if len(pitch_list) == 0:
+            return
+        
+        else:
+            pitch_buffer_mode = statistics.mode(pitch_list)
+
+            return pitch_buffer_mode
