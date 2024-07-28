@@ -2002,7 +2002,7 @@ class SheetWindow(QWidget):
 
 #Qapplication instance
 app = QApplication([])
-
+app.setWindowIcon(QIcon(r"C:\\Users\\Rolandas\\Desktop\\Portfolio\\DL&Python Projects\\Fret Memory (InDesign & Photoshop)\\Fret_Memory_Icon.ico"))
 #Widgets
 window = MainWindow()
 window.show()
