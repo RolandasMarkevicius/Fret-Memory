@@ -729,18 +729,12 @@ class SoundProcessing(QThread):
         self.bound_list = bound_list
         self.note_list = note_list
 
-
-        # self.note.connect(self.run)
-
         self._running = True
-        print('sound processing tread initiated')
 
     def run(self):
         for i in self.note_list:
-            print('initiating while loop')
 
             if self._running == False:
-                print('for loop broken')
                 break
 
             # self._running = True
@@ -762,7 +756,6 @@ class SoundProcessing(QThread):
             self.stream.stop_stream()
             self.stream.close()
             self.p.terminate()
-            print('thread terminated')
             return
 
         # test if the current pitch matches a key in each string
@@ -839,13 +832,10 @@ class SoundProcessing(QThread):
 
     def stop(self):
         self._running = False
-        print('sent signal to stop')
 
     def fq_to_key(self, pitch, string, bounds):
         floor = bounds[:, 0]
         ceiling = bounds[:, 1]
-
-        print(pitch)
 
         true_array = np.logical_and(floor <= pitch, pitch <= ceiling)
         index = np.where(true_array == True)[0]
@@ -863,7 +853,6 @@ class SoundProcessing(QThread):
         while len(pitch_list) <= self.time_buffer:
 
             if self._running == False:
-                print('record pitch broken')
                 break
 
             else:
