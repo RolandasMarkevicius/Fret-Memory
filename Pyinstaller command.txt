@@ -1,1 +1,1 @@
-pyinstaller --onefile --icon="C:\Users\Rolandas\Desktop\Portfolio\DL&Python Projects\Fret Memory (InDesign & Photoshop)\Fret_Memory_Icon.ico" --add-data "C:\Users\Rolandas\Desktop\Portfolio\DL&Python Projects\Fret Memory\Images\Fret_Board.svg;images" --noconsole GUI.py
+pyinstaller --onefile --icon="C:\Users\Rolandas\Desktop\Portfolio\DL&Python Projects\Fret Memory (InDesign & Photoshop)\Fret_Memory_Icon.ico" --add-data "C:\Users\Rolandas\Desktop\Portfolio\DL&Python Projects\Fret Memory\Images\Fret_Board.svg;images" --noconsole --name="Fret Memory" GUI.py

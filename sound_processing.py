@@ -717,13 +717,12 @@ class SoundProcessing(QThread):
         # Initialize aubio pitch detection
         self.pDetection = aubio.pitch("default", BUFFER_SIZE, BUFFER_SIZE, RATE)
         self.pDetection.set_unit("Hz")
-        self.pDetection.set_silence(-70)
+        self.pDetection.set_silence(-80)
         self.pDetection.set_tolerance(0.8)
 
-        self.time_to_average = 0.2
+        self.time_to_average = 0.1
         self.time_buffer = int(RATE / BUFFER_SIZE * self.time_to_average)
         self.pitch_buffer = []
-        self.good_sample_count = 12
         self.fq_threshold = 60
 
         self.mode_list = mode_list
