@@ -5,11 +5,7 @@ from PySide6.QtSvg import QSvgRenderer
 from PySide6.QtSvgWidgets import QSvgWidget
 from PySide6.QtCore import QVariantAnimation
 
-import math
 import numpy as np
-import threading
-import time
-import queue
 import random
 
 from sound_processing import StringPicker, CalibrateGuitar, SoundProcessing, StandardBounds
@@ -250,9 +246,7 @@ class MainWindow(QMainWindow):
         self.loop.exec()
 
     def stop_calib_temp(self, result):
-        print("finished signal worked")
         self.bounds_list.append(result)
-        print(result)
         self.loop.quit()
 
     @Slot()
@@ -260,14 +254,9 @@ class MainWindow(QMainWindow):
         print(f'scroll {result}')
 
         if result:
-            # current_value = self.sheet_zone.verticalScrollBar().value()
-            # self.sheet_zone.verticalScrollBar().setValue(current_value + 475)
             scroll_bar = self.sheet_zone.verticalScrollBar()
             scroll_bar_start_value = scroll_bar.value()
-            scroll_bar_end_value = scroll_bar.value() + 455
-
-            # QVariantAnimation(self)
-            
+            scroll_bar_end_value = scroll_bar.value() + 455      
 
             self.sb_animation = QPropertyAnimation(scroll_bar, b"value")
             self.sb_animation.setEasingCurve(QEasingCurve.InOutCubic)
@@ -890,7 +879,6 @@ class SheetWindow(QWidget):
 
     def generate_notes(self): #generate and draw the notes
         #key values
-        print('notes generated')
 
         key_array = np.array(self.key_list)
         key_list_f = key_array.flatten()
