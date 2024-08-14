@@ -46,7 +46,7 @@ class MainWindow(QMainWindow):
         #Images
         #Fret boad image
         fretboard_image_size = QSize(900, 200)
-        fretboard_image = QSvgWidget("C://Users//Rolandas//Desktop//Portfolio//DL&Python Projects//Fret Memory//Images//Fret_Board.svg")
+        fretboard_image = QSvgWidget("C://Users//Rolandas//Desktop//Portfolio//Projects//Fret Memory//Images//Fret_Board.svg")
         fretboard_image.setContentsMargins(0, 0, 0, 0)
         fretboard_image.setFixedSize(fretboard_image_size)
 
@@ -2002,7 +2002,7 @@ class SheetWindow(QWidget):
 
 #Qapplication instance
 app = QApplication([])
-app.setWindowIcon(QIcon(r"C:\\Users\\Rolandas\\Desktop\\Portfolio\\DL&Python Projects\\Fret Memory (InDesign & Photoshop)\\Fret_Memory_Icon.ico"))
+app.setWindowIcon(QIcon(r"C:\\Users\\Rolandas\\Desktop\\Portfolio\\Projects\\Fret Memory (InDesign & Photoshop)\\Fret_Memory_Icon.ico"))
 #Widgets
 window = MainWindow()
 window.show()
