@@ -5,7 +5,7 @@ a = Analysis(
     ['GUI.py'],
     pathex=[],
     binaries=[],
-    datas=[('C:\\Users\\Rolandas\\Desktop\\Portfolio\\DL&Python Projects\\Fret Memory\\Images\\Fret_Board.svg', 'images')],
+    datas=[('C:\\Users\\Rolandas\\Desktop\\Portfolio\\Projects\\Fret Memory\\Images\\Fret_Board.svg', 'images')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
@@ -35,5 +35,5 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon=['C:\\Users\\Rolandas\\Desktop\\Portfolio\\DL&Python Projects\\Fret Memory (InDesign & Photoshop)\\Fret_Memory_Icon.ico'],
+    icon=['C:\\Users\\Rolandas\\Desktop\\Portfolio\\Projects\\Fret Memory (InDesign & Photoshop)\\Fret_Memory_Icon.ico'],
 )

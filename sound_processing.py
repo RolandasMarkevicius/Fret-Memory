@@ -738,6 +738,7 @@ class SoundProcessing(QThread):
                 break
 
             # self._running = True
+            print('running')
 
             while self._running:
                 self.loop_state = True
@@ -793,7 +794,7 @@ class SoundProcessing(QThread):
                                             bounds=self.bound_list[5])
 
 
-        if note[0] == 'i' and note[1] != 'i':
+        if note[0] == 'i' and note[1] != 'i' and note[1] != 'v':
             if i_recorded_key == note:
                 self.update.emit(True)
                 self.loop_state = False #self._running = False

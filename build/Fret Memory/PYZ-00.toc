@@ -1,5 +1,5 @@
-('C:\\Users\\Rolandas\\Desktop\\Portfolio\\DL&Python Projects\\Fret '
- 'Memory\\build\\Fret Memory\\PYZ-00.pyz',
+('C:\\Users\\Rolandas\\Desktop\\Portfolio\\Projects\\Fret Memory\\build\\Fret '
+ 'Memory\\PYZ-00.pyz',
  [('PySide6',
    'C:\\Users\\Rolandas\\AppData\\Local\\Programs\\Python\\Python311\\Lib\\site-packages\\PySide6\\__init__.py',
    'PYMODULE'),
@@ -946,7 +946,7 @@
    'C:\\Users\\Rolandas\\AppData\\Local\\Programs\\Python\\Python311\\Lib\\socketserver.py',
    'PYMODULE'),
   ('sound_processing',
-   'C:\\Users\\Rolandas\\Desktop\\Portfolio\\DL&Python Projects\\Fret '
+   'C:\\Users\\Rolandas\\Desktop\\Portfolio\\Projects\\Fret '
    'Memory\\sound_processing.py',
    'PYMODULE'),
   ('ssl',
