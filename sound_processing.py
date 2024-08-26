@@ -738,7 +738,6 @@ class SoundProcessing(QThread):
                 break
 
             # self._running = True
-            print('running')
 
             while self._running:
                 self.loop_state = True
